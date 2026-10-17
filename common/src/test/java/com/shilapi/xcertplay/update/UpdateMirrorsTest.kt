@@ -6,12 +6,15 @@ import org.junit.Test
 
 class UpdateMirrorsTest {
     @Test
-    fun catalogTriesGithubFirstThenTheCdns() {
+    fun catalogTriesGithubThenTheAcceleratorsAndKeepsJsdelivrLast() {
         val urls = UpdateMirrors.catalogUrls()
-        assertEquals(3, urls.size)
+        assertEquals(4, urls.size)
         assertTrue(urls[0], urls[0].startsWith("https://api.github.com/repos/joeyzhang99/XPplay/"))
-        assertTrue(urls[1], urls[1].contains("cdn.jsdelivr.net"))
-        assertTrue(urls[2], urls[2].contains("gcore.jsdelivr.net"))
+        // Accelerators proxy the raw file, which has no branch cache; jsDelivr's copy can lag
+        // up to twelve hours, so it goes last.
+        assertTrue(urls[1], urls[1].contains("raw.githubusercontent.com"))
+        assertTrue(urls[2], urls[2].contains("raw.githubusercontent.com"))
+        assertTrue(urls[3], urls[3].contains("cdn.jsdelivr.net"))
     }
 
     @Test

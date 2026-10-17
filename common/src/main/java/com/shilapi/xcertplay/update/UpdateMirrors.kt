@@ -11,16 +11,16 @@ package com.shilapi.xcertplay.update
  * 连接超时，不会影响后续档位。
  */
 internal object UpdateMirrors {
-    /** 仓库内静态清单，jsDelivr 会缓存，国内通常可直连。 */
-    internal const val FALLBACK_CATALOG_URL =
-        "https://cdn.jsdelivr.net/gh/joeyzhang99/XPplay@main/version.json"
+    /** 仓库内的静态清单，实时内容，没有分支缓存。 */
+    internal const val RAW_CATALOG_URL =
+        "https://raw.githubusercontent.com/joeyzhang99/XPplay/main/version.json"
 
     /**
-     * 同一份文件的另一个 jsDelivr 边缘（gcore）。它和 cdn.jsdelivr.net 的缓存刷新时间不同，
-     * 一个刚发版还留着旧版本时，另一个往往已经更新。
+     * jsDelivr 的副本。分支引用（@main）有 12 小时缓存，刚发版时可能还是旧版本，所以它排在
+     * 加速通道之后，只作最后的兜底。
      */
-    internal const val SECONDARY_CATALOG_URL =
-        "https://gcore.jsdelivr.net/gh/joeyzhang99/XPplay@main/version.json"
+    internal const val FALLBACK_CATALOG_URL =
+        "https://cdn.jsdelivr.net/gh/joeyzhang99/XPplay@main/version.json"
 
     /** 拼在原始 GitHub 地址前的加速前缀，按尝试顺序。 */
     internal val DOWNLOAD_PREFIXES = listOf(
@@ -29,11 +29,17 @@ internal object UpdateMirrors {
         "https://ghproxy.net/",
     )
 
-    /** 检查更新时依次尝试的地址。 */
+    /**
+     * 检查更新时依次尝试的地址。
+     *
+     * GitHub 的 API 与 raw 在国内都不通，但加速前缀能代理 raw：它转发的是实时文件，没有分支
+     * 缓存，所以比 jsDelivr 的新鲜度可靠。jsDelivr 留在最后兜底。
+     */
     internal fun catalogUrls(): List<String> = listOf(
         UpdateClient.RELEASES_URL,
+        DOWNLOAD_PREFIXES[0] + RAW_CATALOG_URL,
+        DOWNLOAD_PREFIXES[1] + RAW_CATALOG_URL,
         FALLBACK_CATALOG_URL,
-        SECONDARY_CATALOG_URL,
     )
 
     /** 一个 GitHub 下载地址的全部可用镜像，原始地址排第一。 */
@@ -44,7 +50,8 @@ internal object UpdateMirrors {
     internal fun channelLabel(url: String): String = when {
         url.startsWith("https://api.github.com") -> "GitHub"
         url.contains("jsdelivr") -> "jsDelivr"
-        url.contains("gitmirror") -> "gitmirror"
+        DOWNLOAD_PREFIXES.any { url.startsWith(it) } ->
+            DOWNLOAD_PREFIXES.first { url.startsWith(it) }.substringAfter("://").trimEnd('/')
         else -> url.substringAfter("://").substringBefore('/')
     }
 
