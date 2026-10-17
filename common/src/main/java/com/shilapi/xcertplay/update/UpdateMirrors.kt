@@ -37,6 +37,14 @@ internal object UpdateMirrors {
     internal fun downloadUrls(githubUrl: String): List<String> =
         listOf(githubUrl) + DOWNLOAD_PREFIXES.map { it + githubUrl }
 
+    /** 检查更新时显示给用户的通道名。 */
+    internal fun channelLabel(url: String): String = when {
+        url.startsWith("https://api.github.com") -> "GitHub"
+        url.contains("jsdelivr") -> "jsDelivr"
+        url.contains("gitmirror") -> "gitmirror"
+        else -> url.substringAfter("://").substringBefore('/')
+    }
+
     /** 展示给用户的镜像站点，用于手动复制。 */
     internal fun mirrorHosts(): List<String> = DOWNLOAD_PREFIXES.map { prefix ->
         prefix.removePrefix("https://").trimEnd('/')

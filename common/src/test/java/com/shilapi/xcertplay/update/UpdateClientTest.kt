@@ -55,10 +55,13 @@ class UpdateClientTest {
         }
         val selected = AtomicBoolean()
 
-        UpdateClient.fetchText("$root/selected-network", null, "DiPlay/test") { url ->
-            selected.set(true)
-            url.openConnection()
-        }
+        UpdateClient.fetchText(
+            "$root/selected-network", null, "DiPlay/test",
+            openConnection = { url ->
+                selected.set(true)
+                url.openConnection()
+            },
+        )
 
         assertTrue(selected.get())
     }

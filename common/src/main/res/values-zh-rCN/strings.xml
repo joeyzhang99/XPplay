@@ -924,4 +924,5 @@
     <string name="update_mirrors_open_github">打开 GitHub 发布页</string>
     <string name="update_mirrors_row">通过 %1$s 复制链接（%2$s）</string>
     <string name="update_mirrors_copied">链接已复制（%1$s）</string>
+    <string name="update_checking_channel">正在检查 %1$s…</string>
 </resources>

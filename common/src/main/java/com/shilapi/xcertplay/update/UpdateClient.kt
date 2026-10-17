@@ -13,6 +13,14 @@ internal object UpdateClient {
         "https://api.github.com/repos/joeyzhang99/XPplay/releases?per_page=3"
     private const val CONNECT_TIMEOUT_MILLIS = 10_000
     private const val READ_TIMEOUT_MILLIS = 30_000
+
+    /**
+     * The update check only fetches a few kilobytes of JSON, and a blocked GitHub connection
+     * fails by timing out rather than by refusing: wait minutes and the driver gives up first.
+     * Three channels at 4 + 8 seconds keep the worst case near half a minute.
+     */
+    internal const val PROBE_CONNECT_TIMEOUT_MILLIS = 4_000
+    internal const val PROBE_READ_TIMEOUT_MILLIS = 8_000
     private const val MAXIMUM_TEXT_BYTES = 4 * 1024 * 1024
     private const val BUFFER_BYTES = 64 * 1024
 
@@ -21,13 +29,15 @@ internal object UpdateClient {
         accept: String?,
         userAgent: String,
         openConnection: (URL) -> URLConnection = { it.openConnection() },
+        connectTimeoutMillis: Int = CONNECT_TIMEOUT_MILLIS,
+        readTimeoutMillis: Int = READ_TIMEOUT_MILLIS,
     ): String {
         val connection = openConnection(URL(url)) as? HttpURLConnection
             ?: throw IOException("Request to $url did not open an HTTP connection")
         try {
             connection.requestMethod = "GET"
-            connection.connectTimeout = CONNECT_TIMEOUT_MILLIS
-            connection.readTimeout = READ_TIMEOUT_MILLIS
+            connection.connectTimeout = connectTimeoutMillis
+            connection.readTimeout = readTimeoutMillis
             connection.useCaches = false
             accept?.let { connection.setRequestProperty("Accept", it) }
             connection.setRequestProperty("User-Agent", userAgent)

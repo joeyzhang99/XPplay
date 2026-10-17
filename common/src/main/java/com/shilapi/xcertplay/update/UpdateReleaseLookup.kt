@@ -14,13 +14,22 @@ internal object UpdateReleaseLookup {
         installedVersion: String,
         userAgent: String,
         openConnection: (URL) -> URLConnection = { it.openConnection() },
+        onAttempt: (String) -> Unit = {},
     ): UpdateRelease? {
         if (!UPDATE_FEED_ENABLED) return null
         // GitHub is routinely blocked in China: try the API, then the CDN copies of version.json.
         var lastFailure: Throwable? = null
         for (url in UpdateMirrors.catalogUrls()) {
+            onAttempt(UpdateMirrors.channelLabel(url))
             val json = try {
-                UpdateClient.fetchText(url, "application/vnd.github+json", userAgent, openConnection)
+                UpdateClient.fetchText(
+                    url,
+                    "application/vnd.github+json",
+                    userAgent,
+                    openConnection,
+                    connectTimeoutMillis = UpdateClient.PROBE_CONNECT_TIMEOUT_MILLIS,
+                    readTimeoutMillis = UpdateClient.PROBE_READ_TIMEOUT_MILLIS,
+                )
             } catch (error: Throwable) {
                 lastFailure = error
                 continue

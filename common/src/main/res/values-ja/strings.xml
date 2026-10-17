@@ -965,4 +965,5 @@
     <string name="update_mirrors_open_github">GitHub のリリースページを開く</string>
     <string name="update_mirrors_row">%1$s 経由のリンクをコピー（%2$s）</string>
     <string name="update_mirrors_copied">リンクをコピーしました（%1$s）</string>
+    <string name="update_checking_channel">確認中 %1$s…</string>
 </resources>

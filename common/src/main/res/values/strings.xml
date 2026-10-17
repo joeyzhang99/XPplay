@@ -966,4 +966,5 @@
     <string name="update_mirrors_open_github">Open the GitHub releases page</string>
     <string name="update_mirrors_row">Copy link via %1$s (%2$s)</string>
     <string name="update_mirrors_copied">Link copied (%1$s)</string>
+    <string name="update_checking_channel">Checking %1$s…</string>
 </resources>

@@ -2181,7 +2181,14 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
     }
 
     private fun latestRelease(): UpdateRelease? {
-        return UpdateReleaseLookup.latest(version(), userAgent())
+        return UpdateReleaseLookup.latest(version(), userAgent()) { channel ->
+            runOnUiThread {
+                if (updateStage == UpdateStage.CHECKING) {
+                    updateMessage = getString(R.string.update_checking_channel, channel)
+                    refreshUpdateUi(updateGeneration)
+                }
+            }
+        }
     }
 
     private fun openAvailableUpdate(release: UpdateRelease) {
