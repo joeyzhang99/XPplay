@@ -925,4 +925,7 @@
     <string name="update_mirrors_row">通过 %1$s 复制链接（%2$s）</string>
     <string name="update_mirrors_copied">链接已复制（%1$s）</string>
     <string name="update_checking_channel">正在检查 %1$s…</string>
+    <string name="quick_settings_hidden_hint">按钮已收起。可在 XPplay 设置中重新打开。</string>
+    <string name="settings_quick_button">画面上的设置按钮</string>
+    <string name="settings_quick_button_description">CarPlay 画面上显示一个齿轮，点一下就能进这个设置页；长按可收起。</string>
 </resources>

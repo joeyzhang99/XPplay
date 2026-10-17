@@ -967,4 +967,7 @@
     <string name="update_mirrors_row">Copy link via %1$s (%2$s)</string>
     <string name="update_mirrors_copied">Link copied (%1$s)</string>
     <string name="update_checking_channel">Checking %1$s…</string>
+    <string name="quick_settings_hidden_hint">Settings hidden. Long-press is off: re-enable it in XPplay settings.</string>
+    <string name="settings_quick_button">Settings button on screen</string>
+    <string name="settings_quick_button_description">A gear sits on the CarPlay picture; tap it to open these settings. Long-press it to hide.</string>
 </resources>

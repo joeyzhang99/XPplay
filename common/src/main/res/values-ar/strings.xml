@@ -907,4 +907,7 @@
     <string name="settings_ambient_parked_notice">Configure while parked. Experimental ambient lighting support; compatibility varies by car and firmware. Level and colour do not reach every lamp.</string>
     <string name="setup_car_description">XPplay adapts itself to this head unit. Nothing to choose here.</string>
     <string name="setup_car_standard">Standard (recommended)</string>
+    <string name="settings_quick_button">زر الإعدادات على الشاشة</string>
+    <string name="settings_quick_button_description">تظهر ترس على شاشة CarPlay؛ اضغط عليه لفتح هذه الإعدادات. اضغط مطولًا لإخفائه.</string>
+    <string name="quick_settings_hidden_hint">تم إخفاء الزر. يمكنك إعادة إظهاره من إعدادات XPplay.</string>
 </resources>

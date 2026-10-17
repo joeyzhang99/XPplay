@@ -22,11 +22,16 @@ internal object UpdateMirrors {
     internal const val FALLBACK_CATALOG_URL =
         "https://cdn.jsdelivr.net/gh/joeyzhang99/XPplay@main/version.json"
 
-    /** 拼在原始 GitHub 地址前的加速前缀，按尝试顺序。 */
+    /**
+     * 拼在原始 GitHub 地址前的加速前缀，按尝试顺序。
+     *
+     * 2026-10-17 在上海移动网络实测：ghfast.top 全部超时（连接挂住不返回），ghproxy.net 稳定
+     * 1–2 秒，gh-proxy.com 正常但波动大（0.5–9 秒）。失效的那条已移除——留着它每次让用户白等
+     * 一个超时。
+     */
     internal val DOWNLOAD_PREFIXES = listOf(
-        "https://ghfast.top/",
-        "https://gh-proxy.com/",
         "https://ghproxy.net/",
+        "https://gh-proxy.com/",
     )
 
     /**

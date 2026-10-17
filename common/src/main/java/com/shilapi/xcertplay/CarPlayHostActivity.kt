@@ -386,6 +386,8 @@ class CarPlayHostActivity : ComponentActivity() {
     private var picturePanelGeneration = 0
     private var gestureOverlay: View? = null
     private var settingsMenu: View? = null
+    /** 车机画面上那个可拖动的设置按钮，CarPlay 会话开着时用来一键进设置。 */
+    private var quickSettingsButton: View? = null
     private var settingsMenuCategoryKey = "connection"
     private var settingsMenuContentScroll: ScrollView? = null
     private var settingsBaseline: SettingsBaseline? = null
@@ -1467,6 +1469,8 @@ class CarPlayHostActivity : ComponentActivity() {
             root.addView(overlay, FrameLayout.LayoutParams(-1, -1))
         }
         root.addView(gestureLayer, FrameLayout.LayoutParams(-1, -1))
+        addQuickSettingsButton(root)
+        
         // Measure the preparation content naturally, then fit it inside the safe viewport.
         val viewport = object : FrameLayout(this) {
             override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -2397,6 +2401,21 @@ class CarPlayHostActivity : ComponentActivity() {
             ) { checked ->
                 autoStartOnBoot = checked
                 appendLog("Boot auto-start ${if (checked) "enabled" else "disabled"}")
+            },
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ).apply { topMargin = dp(12) },
+        )
+        content.addView(
+            settingsSwitchRow(
+                label = getString(R.string.settings_quick_button),
+                checked = AirPlayPersistence.loadQuickSettingsButton(this),
+                description = getString(R.string.settings_quick_button_description),
+            ) { checked ->
+                AirPlayPersistence.saveQuickSettingsButton(this, checked)
+                quickSettingsButton?.visibility = if (checked) View.VISIBLE else View.GONE
+                appendLog("Quick settings button ${if (checked) "shown" else "hidden"}")
             },
             LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -5235,6 +5254,76 @@ class CarPlayHostActivity : ComponentActivity() {
         owner.whenVideoReleased { owners.remove(owner) }
         // Preserve bounded teardown sequencing without blocking the UI or forgetting a live worker.
         owner.awaitVideoReleased(sinkReleaseWaitMillis)
+    }
+
+    /**
+     * CarPlay 画面上的一键设置入口。放在手势层之上，否则触摸会被 CarPlay 的转发层吃掉；
+     * 半透明、可拖动、长按收起，收起状态记在偏好里。
+     */
+    private fun addQuickSettingsButton(root: FrameLayout) {
+        val size = dp(52)
+        val button = ImageView(this).apply {
+            setImageResource(R.drawable.ic_xp_quick_settings)
+            contentDescription = getString(R.string.settings)
+            alpha = 0.42f
+            setBackgroundColor(Color.TRANSPARENT)
+            setPadding(dp(12), dp(12), dp(12), dp(12))
+            setOnClickListener {
+                if (menuOpen) return@setOnClickListener
+                openSettingsMenu()
+            }
+            setOnLongClickListener {
+                AirPlayPersistence.saveQuickSettingsButton(this@CarPlayHostActivity, false)
+                quickSettingsButton?.visibility = View.GONE
+                android.widget.Toast.makeText(this@CarPlayHostActivity, R.string.quick_settings_hidden_hint, android.widget.Toast.LENGTH_LONG).show()
+                true
+            }
+            // 拖动：不改变父布局，只改自己的边距。
+            setOnTouchListener(object : View.OnTouchListener {
+                private var startX = 0f
+                private var startY = 0f
+                private var startLeft = 0
+                private var startTop = 0
+                private var dragged = false
+                override fun onTouch(view: View, event: android.view.MotionEvent): Boolean {
+                    when (event.actionMasked) {
+                        android.view.MotionEvent.ACTION_DOWN -> {
+                            startX = event.rawX
+                            startY = event.rawY
+                            startLeft = view.left
+                            startTop = view.top
+                            dragged = false
+                            return false
+                        }
+                        android.view.MotionEvent.ACTION_MOVE -> {
+                            val dx = event.rawX - startX
+                            val dy = event.rawY - startY
+                            if (!dragged && (kotlin.math.abs(dx) > dp(8) || kotlin.math.abs(dy) > dp(8))) {
+                                dragged = true
+                            }
+                            if (dragged) {
+                                val parent = view.parent as? View ?: return false
+                                val maxLeft = (parent.width - view.width).coerceAtLeast(0)
+                                val maxTop = (parent.height - view.height).coerceAtLeast(0)
+                                val left = (startLeft + dx.toInt()).coerceIn(0, maxLeft)
+                                val top = (startTop + dy.toInt()).coerceIn(0, maxTop)
+                                view.layout(left, top, left + view.width, top + view.height)
+                                return true
+                            }
+                            return false
+                        }
+                    }
+                    return false
+                }
+            })
+        }
+        quickSettingsButton = button
+        button.visibility =
+            if (AirPlayPersistence.loadQuickSettingsButton(this)) View.VISIBLE else View.GONE
+        root.addView(button, FrameLayout.LayoutParams(size, size, Gravity.TOP or Gravity.END).apply {
+            topMargin = dp(56)
+            marginEnd = dp(12)
+        })
     }
 
     private fun openSettingsMenu() {

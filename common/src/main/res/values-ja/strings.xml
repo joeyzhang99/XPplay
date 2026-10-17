@@ -966,4 +966,7 @@
     <string name="update_mirrors_row">%1$s 経由のリンクをコピー（%2$s）</string>
     <string name="update_mirrors_copied">リンクをコピーしました（%1$s）</string>
     <string name="update_checking_channel">確認中 %1$s…</string>
+    <string name="quick_settings_hidden_hint">ボタンを非表示にしました。XPplay の設定で再表示できます。</string>
+    <string name="settings_quick_button">画面の設定ボタン</string>
+    <string name="settings_quick_button_description">CarPlay 画面に歯車を表示します。押すとこの設定を開きます。長押しで非表示。</string>
 </resources>

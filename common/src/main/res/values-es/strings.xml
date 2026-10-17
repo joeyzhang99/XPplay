@@ -859,4 +859,7 @@
     <string name="settings_ambient_parked_notice">Configure while parked. Experimental ambient lighting support; compatibility varies by car and firmware. Level and colour do not reach every lamp.</string>
     <string name="setup_car_description">XPplay adapts itself to this head unit. Nothing to choose here.</string>
     <string name="setup_car_standard">Standard (recommended)</string>
+    <string name="settings_quick_button">Botón de ajustes en pantalla</string>
+    <string name="settings_quick_button_description">Un engranaje aparece sobre la imagen de CarPlay; tócalo para abrir estos ajustes. Mantén pulsado para ocultarlo.</string>
+    <string name="quick_settings_hidden_hint">Botón oculto. Puedes volver a mostrarlo en los ajustes de XPplay.</string>
 </resources>
