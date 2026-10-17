@@ -918,4 +918,10 @@
     <string name="iphone_corner_mask_mode">iPhone 遮罩（實驗性）</string>
     <string name="setup_car_description">XPplay 會自動配合本車機，這裡不需要選擇。</string>
     <string name="setup_car_standard">標準模式（建議）</string>
+    <string name="update_mirrors_title">國內更新通道</string>
+    <string name="update_mirrors_description">GitHub 在國內常打不開。點一下鏡像即可複製下載連結，再傳到手機或電腦開啟。</string>
+    <string name="update_mirrors_check_first">先點「檢查更新」，最新版本的鏡像連結會出現在這裡。</string>
+    <string name="update_mirrors_open_github">開啟 GitHub 發佈頁</string>
+    <string name="update_mirrors_row">透過 %1$s 複製連結（%2$s）</string>
+    <string name="update_mirrors_copied">連結已複製（%1$s）</string>
 </resources>

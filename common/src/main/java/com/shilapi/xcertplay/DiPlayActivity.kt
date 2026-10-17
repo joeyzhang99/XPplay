@@ -82,6 +82,7 @@ import com.shilapi.xcertplay.update.BackgroundUpdateScheduler
 import com.shilapi.xcertplay.update.UpdateApkExport
 import com.shilapi.xcertplay.update.UpdateAvailability
 import com.shilapi.xcertplay.update.UpdateCatalog
+import com.shilapi.xcertplay.update.UpdateMirrors
 import com.shilapi.xcertplay.update.UpdateChecksums
 import com.shilapi.xcertplay.update.UpdateClient
 import com.shilapi.xcertplay.update.UpdateRelease
@@ -145,6 +146,8 @@ internal object SettingsInformationArchitecture {
 }
 
 /** DiAuto's visual language, with a connection flow for an independent CarPlay receiver. */
+private const val RELEASES_PAGE = "https://github.com/joeyzhang99/XPplay/releases"
+
 class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
     private val handler = Handler(Looper.getMainLooper())
     private var appNight = true
@@ -1959,12 +1962,53 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                 getString(R.string.settings_background_update_checks_description),
                 UpdateAvailability.backgroundChecksEnabled(this)) { UpdateAvailability.saveBackgroundChecksEnabled(this, it) }
         }
+        mirrorSection(content)
         section(content, getString(R.string.backup_title)) { card ->
             card.addView(button(getString(R.string.backup_open), false) { openBackup() }, matchButton(0, 60))
             card.addView(label(getString(R.string.backup_open_description), 14, MUTED).apply { setPadding(0, dp(10), 0, 0) })
         }
         section(content, getString(R.string.made_possible_by_open_source)) { card ->
             card.addView(label(getString(R.string.receiver_based_on_xcertplay_licensed_under_gpl_3_0_diplay), 16, MUTED))
+        }
+    }
+
+    /**
+     * GitHub 在国内常被阻断，把镜像地址直接摆在更新页上：点一下复制，可发到电脑或微信再下载。
+     */
+    private fun mirrorSection(content: LinearLayout) {
+        section(content, getString(R.string.update_mirrors_title)) { card ->
+            card.addView(label(getString(R.string.update_mirrors_description), 15, MUTED))
+            val release = updateRelease ?: availableUpdate
+            if (release == null) {
+                card.addView(
+                    label(getString(R.string.update_mirrors_check_first), 14, MUTED)
+                        .apply { setPadding(0, dp(10), 0, 0) },
+                )
+                card.addView(button(getString(R.string.update_mirrors_open_github), false) {
+                    openSystem(Intent(Intent.ACTION_VIEW, Uri.parse(RELEASES_PAGE)))
+                }, matchButton(10, 56))
+                return@section
+            }
+            UpdateMirrors.mirrorHosts().forEachIndexed { index, host ->
+                val url = UpdateMirrors.downloadUrls(release.apkUrl).getOrNull(index + 1) ?: return@forEachIndexed
+                card.addView(
+                    button(getString(R.string.update_mirrors_row, host, release.tagName), false) {
+                        copyToClipboard(url, getString(R.string.update_mirrors_copied, host))
+                    },
+                    matchButton(if (index == 0) 10 else 6, 56),
+                )
+            }
+            card.addView(button(getString(R.string.update_mirrors_open_github), false) {
+                openSystem(Intent(Intent.ACTION_VIEW, Uri.parse(RELEASES_PAGE)))
+            }, matchButton(10, 56))
+        }
+    }
+
+    private fun copyToClipboard(text: String, confirmation: String) {
+        runCatching {
+            getSystemService(android.content.ClipboardManager::class.java)
+                .setPrimaryClip(android.content.ClipData.newPlainText("XPplay", text))
+            toast(confirmation)
         }
     }
 
@@ -2171,15 +2215,19 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                 // The cached release can be a day old. Download the newest one.
                 release = latestRelease() ?: throw IOException(getString(R.string.update_up_to_date))
                 val checksumsFile = File(directory, UpdateCatalog.CHECKSUMS_FILE)
-                UpdateClient.download(release.checksumsUrl, checksumsFile) { _, _ -> }
+                UpdateClient.downloadWithMirrors(release.checksumsUrl, checksumsFile) { _, _ -> }
                 val apkFile = File(directory, release.apkName)
-                UpdateClient.download(release.apkUrl, apkFile) { written, total ->
-                    val percent = total?.takeIf { it > 0 }?.let { (written * 100 / it).toInt() } ?: return@download
-                    if (percent != updateProgress) {
-                        updateProgress = percent
-                        refreshUpdateUi(generation)
-                    }
-                }
+                UpdateClient.downloadWithMirrors(
+                    githubUrl = release.apkUrl,
+                    destination = apkFile,
+                    onProgress = { written, total ->
+                        val percent = total?.takeIf { it > 0 }?.let { (written * 100 / it).toInt() }
+                        if (percent != null && percent != updateProgress) {
+                            updateProgress = percent
+                            refreshUpdateUi(generation)
+                        }
+                    },
+                )
                 updateStage = UpdateStage.VERIFYING
                 refreshUpdateUi(generation)
                 val expected = UpdateChecksums.parse(checksumsFile.readText())

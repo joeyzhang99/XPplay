@@ -10,7 +10,7 @@ import java.net.URLConnection
 
 internal object UpdateClient {
     internal const val RELEASES_URL =
-        "https://api.github.com/repos/shihabal3amri/DiPlay/releases?per_page=3"
+        "https://api.github.com/repos/joeyzhang99/XPplay/releases?per_page=3"
     private const val CONNECT_TIMEOUT_MILLIS = 10_000
     private const val READ_TIMEOUT_MILLIS = 30_000
     private const val MAXIMUM_TEXT_BYTES = 4 * 1024 * 1024
@@ -39,6 +39,31 @@ internal object UpdateClient {
         } finally {
             connection.disconnect()
         }
+    }
+
+    /**
+     * Downloads [githubUrl], falling back to the accelerator prefixes when the direct request
+     * fails. GitHub's release CDN is unreachable from mainland China often enough that a plain
+     * download would otherwise strand the update page.
+     */
+    internal fun downloadWithMirrors(
+        githubUrl: String,
+        destination: File,
+        onAttempt: (String) -> Unit = {},
+        onProgress: (Long, Long?) -> Unit,
+    ) {
+        var lastFailure: Throwable? = null
+        for (url in UpdateMirrors.downloadUrls(githubUrl)) {
+            try {
+                onAttempt(url)
+                download(url, destination, onProgress)
+                return
+            } catch (failure: Throwable) {
+                lastFailure = failure
+                destination.delete()
+            }
+        }
+        throw lastFailure ?: IOException("Download from $githubUrl failed")
     }
 
     internal fun download(url: String, destination: File, onProgress: (Long, Long?) -> Unit) {

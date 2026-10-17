@@ -959,4 +959,10 @@
     <string name="settings_ambient_parked_notice">Configure while parked. Experimental ambient lighting support; compatibility varies by car and firmware. Level and colour do not reach every lamp.</string>
     <string name="setup_car_description">XPplay adapts itself to this head unit. Nothing to choose here.</string>
     <string name="setup_car_standard">Standard (recommended)</string>
+    <string name="update_mirrors_title">中国本土の更新経路</string>
+    <string name="update_mirrors_description">GitHub は中国本土からよく接続できません。ミラーを押すとダウンロードリンクをコピーします。スマートフォンやパソコンで開いてください。</string>
+    <string name="update_mirrors_check_first">先に「アップデートを確認」を押すと、最新版のミラーリンクがここに表示されます。</string>
+    <string name="update_mirrors_open_github">GitHub のリリースページを開く</string>
+    <string name="update_mirrors_row">%1$s 経由のリンクをコピー（%2$s）</string>
+    <string name="update_mirrors_copied">リンクをコピーしました（%1$s）</string>
 </resources>

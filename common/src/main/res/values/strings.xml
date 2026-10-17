@@ -960,4 +960,10 @@
     <string name="iphone_corner_mask_mode">iPhone mask (experimental)</string>
     <string name="setup_car_description">XPplay adapts itself to this head unit. Nothing to choose here.</string>
     <string name="setup_car_standard">Standard (recommended)</string>
+    <string name="update_mirrors_title">Updates in mainland China</string>
+    <string name="update_mirrors_description">GitHub is often unreachable here. Tap a mirror to copy its download link, then open it on a phone or computer.</string>
+    <string name="update_mirrors_check_first">Check for updates first, then the mirror links for the newest build appear here.</string>
+    <string name="update_mirrors_open_github">Open the GitHub releases page</string>
+    <string name="update_mirrors_row">Copy link via %1$s (%2$s)</string>
+    <string name="update_mirrors_copied">Link copied (%1$s)</string>
 </resources>
