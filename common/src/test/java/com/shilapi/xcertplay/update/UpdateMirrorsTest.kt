@@ -11,7 +11,7 @@ class UpdateMirrorsTest {
         assertEquals(3, urls.size)
         assertTrue(urls[0], urls[0].startsWith("https://api.github.com/repos/joeyzhang99/XPplay/"))
         assertTrue(urls[1], urls[1].contains("cdn.jsdelivr.net"))
-        assertTrue(urls[2], urls[2].contains("gitmirror"))
+        assertTrue(urls[2], urls[2].contains("gcore.jsdelivr.net"))
     }
 
     @Test

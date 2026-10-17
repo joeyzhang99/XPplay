@@ -19,8 +19,8 @@ android {
         applicationId = "com.xpplay.app"
         minSdk = 25
         targetSdk = 37
-        versionCode = 10401 // X.X.X semantic: major*10000 + minor*100 + fix
-        versionName = "XPplay-V1.4.1"
+        versionCode = 10402 // X.X.X semantic: major*10000 + minor*100 + fix
+        versionName = "XPplay-V1.4.2"
 
     }
 

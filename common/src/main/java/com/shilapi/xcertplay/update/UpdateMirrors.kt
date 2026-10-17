@@ -15,9 +15,12 @@ internal object UpdateMirrors {
     internal const val FALLBACK_CATALOG_URL =
         "https://cdn.jsdelivr.net/gh/joeyzhang99/XPplay@main/version.json"
 
-    /** 与 [FALLBACK_CATALOG_URL] 同一份文件的备用 CDN。 */
+    /**
+     * 同一份文件的另一个 jsDelivr 边缘（gcore）。它和 cdn.jsdelivr.net 的缓存刷新时间不同，
+     * 一个刚发版还留着旧版本时，另一个往往已经更新。
+     */
     internal const val SECONDARY_CATALOG_URL =
-        "https://raw.gitmirror.com/joeyzhang99/XPplay/main/version.json"
+        "https://gcore.jsdelivr.net/gh/joeyzhang99/XPplay@main/version.json"
 
     /** 拼在原始 GitHub 地址前的加速前缀，按尝试顺序。 */
     internal val DOWNLOAD_PREFIXES = listOf(
