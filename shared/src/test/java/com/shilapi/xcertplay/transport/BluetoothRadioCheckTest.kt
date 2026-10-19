@@ -48,11 +48,34 @@ class BluetoothRadioCheckTest {
         assertTrue(BluetoothRadioCheck.NO_ADAPTER.contains(BluetoothLinkCheck.NO_SOCKETS_MARK))
     }
 
-    // The driver can switch the radio on, so that attempt goes on being retried.
-    @Test fun aRadioThatIsOffIsStillRetried() {
+    // The driver can switch the radio on, so the attempt is retried — but only through the host's
+    // retry budget, which stops it instead of rebuilding CarPlay every 30 s for hours.
+    @Test fun aRadioThatIsOffIsRetriedThroughTheStartupBudget() {
         val failure = BluetoothRadioCheck.failure(BluetoothRadioCheck.RADIO_OFF)
-        assertFalse(failure is WirelessStartupException)
+        assertTrue(failure is WirelessStartupException)
+        assertEquals(WirelessStartupFailure.BLUETOOTH_OFF, (failure as WirelessStartupException).reason)
+        assertTrue(failure.reason.retryable)
         assertEquals(BluetoothRadioCheck.RADIO_OFF, failure.message)
+    }
+
+    // A radio that is turning on is not a failure: the handshake starts once Android finishes.
+    @Test fun adapterStatesDecideWhetherTheAttemptCanGoOn() {
+        val states = mapOf(
+            android.bluetooth.BluetoothAdapter.STATE_ON to null,
+            android.bluetooth.BluetoothAdapter.STATE_TURNING_ON to null,
+            android.bluetooth.BluetoothAdapter.STATE_OFF to BluetoothRadioCheck.RADIO_OFF,
+            android.bluetooth.BluetoothAdapter.STATE_TURNING_OFF to BluetoothRadioCheck.RADIO_OFF,
+        )
+        for ((state, expected) in states) {
+            assertEquals("state=$state", expected,
+                BluetoothRadioCheck.blockerForState(adapterPresent = true, state = state, pausedByDiPlay = false))
+        }
+        assertEquals(BluetoothRadioCheck.NO_ADAPTER,
+            BluetoothRadioCheck.blockerForState(adapterPresent = false, state = null, pausedByDiPlay = false))
+        assertEquals(BluetoothRadioCheck.NO_ADAPTER,
+            BluetoothRadioCheck.blockerForState(adapterPresent = true, state = null, pausedByDiPlay = false))
+        assertNull(BluetoothRadioCheck.blockerForState(adapterPresent = true,
+            state = android.bluetooth.BluetoothAdapter.STATE_OFF, pausedByDiPlay = true))
     }
 
     // CarPlayHostActivity shows the request in the app's language by finding these words.

@@ -957,9 +957,9 @@ class CarPlayController(
             val mfi = mfiSession?.client
                 ?: throw IOException("MFi coprocessor client is unavailable")
             // Wireless CarPlay begins over Bluetooth: a radio that is off is found before the Wi-Fi is changed.
-            BluetoothRadioCheck.blocker(
+            BluetoothRadioCheck.blockerForState(
                 adapterPresent = bluetoothAdapter != null,
-                enabled = bluetoothAdapter?.isEnabled == true,
+                state = bluetoothAdapterState(),
                 pausedByDiPlay = false,
             )?.let { throw BluetoothRadioCheck.failure(it) }
             val hotspotInfo = startWirelessHotspot(generation)
@@ -1043,7 +1043,7 @@ class CarPlayController(
             val adapter = bluetoothAdapter
                 ?: throw BluetoothRadioCheck.failure(BluetoothRadioCheck.NO_ADAPTER)
             val bluetoothRecoveryComplete = true
-            if (!adapter.isEnabled) throw IOException(BluetoothRadioCheck.RADIO_OFF)
+            if (!adapter.isEnabled) throw BluetoothRadioCheck.failure(BluetoothRadioCheck.RADIO_OFF)
             if (!bluetoothRecoveryComplete) throw IOException("Bluetooth recovery did not complete before the handshake")
             val device = selectWirelessBluetoothDevice(adapter)
             val hostBluetoothMac = accessoryBluetoothMac(adapter)
@@ -2624,6 +2624,20 @@ class CarPlayController(
                 causes.any { it is com.shilapi.xcertplay.network.P2pResetRequiredException },
                 causes.filterIsInstance<WirelessStartupException>().firstOrNull()?.reason),
                 if (wireless) wirelessGeneration.get() else null)
+        }
+    }
+
+    /**
+     * The adapter's state, or a best-effort ON/OFF answer when the vendor framework throws. A state
+     * that cannot be read must not turn into "adapter unavailable".
+     */
+    private fun bluetoothAdapterState(): Int? = bluetoothAdapter?.let { adapter ->
+        runCatching { adapter.state }.getOrElse {
+            if (runCatching { adapter.isEnabled }.getOrDefault(false)) {
+                BluetoothAdapter.STATE_ON
+            } else {
+                BluetoothAdapter.STATE_OFF
+            }
         }
     }
 

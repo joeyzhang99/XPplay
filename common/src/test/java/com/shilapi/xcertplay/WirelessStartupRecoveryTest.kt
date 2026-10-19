@@ -131,6 +131,53 @@ class WirelessStartupRecoveryTest {
         assertEquals(View.GONE, retry.visibility)
     }
 
+    private val radioOff = CarPlayStatus.Failed(
+        BluetoothRadioCheck.RADIO_OFF,
+        startupFailure = WirelessStartupFailure.BLUETOOTH_OFF,
+    )
+
+    // A 2026 CarPlay report made 300 attempts in 2.5 hours because this path had no retry budget.
+    @Test fun bluetoothTurnedOffUsesTheRetryBudgetAndThenStops() =
+        assertNamedUntilRetriesStop(radioOff, R.string.turn_on_bluetooth_in_the_head_unit_s_settings_to_connect)
+
+    @Test fun bluetoothOffRemembersThatTheRadioIsWhatToWaitFor() {
+        val stage = TextView(activity)
+        ReflectionHelpers.setField(activity, "stageStatusView", stage)
+        report(status = radioOff)
+        assertTrue(ReflectionHelpers.getField(activity, "bluetoothOffPending"))
+        // A different failure clears it: the Bluetooth-on broadcast must not restart an unrelated stop.
+        ReflectionHelpers.setField(activity, "reconnectScheduled", false)
+        ReflectionHelpers.setField(activity, "restartGeneration", 1)
+        report(1, CarPlayStatus.Failed("timeout", startupFailure = WirelessStartupFailure.FIRST_TCP_TIMEOUT))
+        assertFalse(ReflectionHelpers.getField(activity, "bluetoothOffPending"))
+    }
+
+    @Test fun turningBluetoothOnResumesAStoppedAttempt() {
+        val sizeClass = Class.forName("com.shilapi.xcertplay.CarPlayHostActivity\$DisplaySize")
+        val size = sizeClass
+            .getDeclaredConstructor(Int::class.javaPrimitiveType, Int::class.javaPrimitiveType)
+            .apply { isAccessible = true }
+            .newInstance(1080, 1564)
+        ReflectionHelpers.setField(activity, "wirelessEnabled", true)
+        ReflectionHelpers.setField(activity, "activeDisplaySize", size)
+        ReflectionHelpers.setField(activity, "bluetoothOffPending", true)
+        ReflectionHelpers.setField(activity, "startupRetryStopped", true)
+        ReflectionHelpers.setField(activity, "restartGeneration", 0)
+        ReflectionHelpers.callInstanceMethod<Unit>(activity, "resumeWirelessAfterBluetoothTurnedOn")
+        assertEquals(1, ReflectionHelpers.getField<Int>(activity, "restartGeneration"))
+        assertFalse(ReflectionHelpers.getField(activity, "startupRetryStopped"))
+        assertFalse(ReflectionHelpers.getField(activity, "bluetoothOffPending"))
+        assertEquals(0, budget().retries)
+        assertEquals(View.GONE, retry.visibility)
+    }
+
+    @Test fun bluetoothOnIsIgnoredUnlessTheRadioWasTheReason() {
+        ReflectionHelpers.setField(activity, "wirelessEnabled", true)
+        ReflectionHelpers.setField(activity, "restartGeneration", 0)
+        ReflectionHelpers.callInstanceMethod<Unit>(activity, "resumeWirelessAfterBluetoothTurnedOn")
+        assertEquals(0, ReflectionHelpers.getField<Int>(activity, "restartGeneration"))
+    }
+
     /** Fails every attempt with [status] until the retries stop, checking the screen names [cause] meanwhile. */
     private fun assertNamedUntilRetriesStop(status: CarPlayStatus.Failed, cause: Int) {
         val stage = TextView(activity)

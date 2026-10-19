@@ -23,12 +23,25 @@ object BluetoothRadioCheck {
     }
 
     /**
+     * Why this attempt cannot reach an iPhone, taking the adapter state into account. A radio that is
+     * still turning on is not a failure: the handshake starts once Android finishes.
+     */
+    fun blockerForState(adapterPresent: Boolean, state: Int?, pausedByDiPlay: Boolean): String? = when {
+        !adapterPresent || state == null -> NO_ADAPTER
+        (state == android.bluetooth.BluetoothAdapter.STATE_OFF ||
+            state == android.bluetooth.BluetoothAdapter.STATE_TURNING_OFF) && !pausedByDiPlay -> RADIO_OFF
+        else -> null
+    }
+
+    /**
      * What [blocker]'s answer is thrown as. A radio that is off can be switched on, so that attempt is
-     * retried; no retry gives a head unit an adapter, so that one stops with its cause.
+     * retried — but as a [WirelessStartupFailure.BLUETOOTH_OFF] startup failure, so the host's retry
+     * budget stops the loop instead of rebuilding CarPlay every 30 s until the app is closed. No retry
+     * gives a head unit an adapter, so that one stops with its cause.
      */
     fun failure(blocker: String): IOException =
         if (blocker == NO_ADAPTER) WirelessStartupException(WirelessStartupFailure.BLUETOOTH_UNUSABLE, blocker)
-        else IOException(blocker)
+        else WirelessStartupException(WirelessStartupFailure.BLUETOOTH_OFF, blocker)
 
     /** Ends in the words the host screen matches on for Bluetooth that apps cannot use. */
     const val NO_ADAPTER = "Bluetooth adapter is unavailable: Android on this head unit ${BluetoothLinkCheck.NO_SOCKETS_MARK}"

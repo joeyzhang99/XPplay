@@ -3,12 +3,15 @@ package com.shilapi.xcertplay
 import android.annotation.SuppressLint
 
 import android.app.AlertDialog
+import android.bluetooth.BluetoothAdapter
 import android.Manifest
 import android.content.ActivityNotFoundException
+import android.content.BroadcastReceiver
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.Resources
@@ -166,6 +169,9 @@ class CarPlayHostActivity : ComponentActivity() {
     private var startupRetryStopped = false
     private var startupRetryButton: View? = null
     private var startupFailureGeneration = -1
+    /** The last connection attempt stopped because the head unit's Bluetooth was off. */
+    private var bluetoothOffPending = false
+    private var bluetoothStateReceiver: BroadcastReceiver? = null
     private lateinit var airPlayIdentity: AirPlayIdentity
     private var languagePreferenceAtCreate = AppLocale.SYSTEM
 
@@ -744,6 +750,7 @@ class CarPlayHostActivity : ComponentActivity() {
         }
         window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         initializeSessionLog()
+        registerBluetoothStateReceiver()
         lastConfiguration = Configuration(resources.configuration)
         darkMode = savedInstanceState?.getBoolean("carplay_night_active")
             ?: nightModeOrNull(resources.configuration.uiMode) ?: false
@@ -1446,6 +1453,7 @@ class CarPlayHostActivity : ComponentActivity() {
         currentSurfaceTexture = null
         fallbackVideoView = null
         fallbackVideoBounds = null
+        unregisterBluetoothStateReceiver()
         sessionLog?.append("Activity destroyed")
         sessionLog?.close()
         sessionLog = null
@@ -4524,6 +4532,7 @@ class CarPlayHostActivity : ComponentActivity() {
                         return@runOnUiThread
                     }
                     activeAirPlaySession = session
+                    bluetoothOffPending = false
                     val pending = pendingIphoneCornerMask
                     if (pending?.first === session) {
                         installIphoneCornerMask(session, pending.second.first, pending.second.second)
@@ -5144,6 +5153,8 @@ class CarPlayHostActivity : ComponentActivity() {
         if (menuOpen) recoveryPendingAfterMenu = true
         if (shuttingDown.get() || menuOpen || handshakeResetInProgress || startupRetryStopped) return
         if (reconnectScheduled) return
+        bluetoothOffPending = startupFailure == WirelessStartupFailure.BLUETOOTH_OFF ||
+            reason.contains(BluetoothRadioCheck.RADIO_OFF_MARK, ignoreCase = true)
         val startupDelay = if (startupFailure != null && startupFailure.retryable)
             startupRetryBudget.nextDelayMillis() else null
         if (startupFailure != null && startupDelay == null) {
@@ -5153,6 +5164,14 @@ class CarPlayHostActivity : ComponentActivity() {
                 // Its cause is in English, for the report; the help line below says what to check.
                 setConnectionStage("${getString(R.string.hotspot_network_not_ready)}\n" +
                     getString(R.string.wireless_startup_retries_exhausted))
+            } else if (startupFailure == WirelessStartupFailure.BLUETOOTH_OFF) {
+                // The driver already knows why; say it in the UI language, then that retries stopped.
+                setConnectionStage(
+                    getString(R.string.turn_on_bluetooth_in_the_head_unit_s_settings_to_connect) + "\n" +
+                        getString(R.string.wireless_startup_retries_exhausted),
+                    englishResources.getString(R.string.turn_on_bluetooth_in_the_head_unit_s_settings_to_connect) + "\n" +
+                        englishResources.getString(R.string.wireless_startup_retries_exhausted),
+                )
             } else if (!startupFailure.retryable) {
                 setConnectionStage(reason, englishReason)
             } else {
@@ -5191,6 +5210,54 @@ class CarPlayHostActivity : ComponentActivity() {
             },
             delayMillis,
         )
+    }
+
+    /**
+     * Wireless CarPlay starts over Bluetooth, so a radio the driver switches on should resume the
+     * attempt at once instead of waiting for the next scheduled retry — or, once the retry budget is
+     * spent, for a manual tap.
+     */
+    private fun registerBluetoothStateReceiver() {
+        if (bluetoothStateReceiver != null) return
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action != BluetoothAdapter.ACTION_STATE_CHANGED) return
+                if (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR) !=
+                    BluetoothAdapter.STATE_ON) return
+                resumeWirelessAfterBluetoothTurnedOn()
+            }
+        }
+        runCatching { registerReceiver(receiver, IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)) }
+            .onSuccess { bluetoothStateReceiver = receiver }
+            .onFailure { appendLog("Bluetooth state receiver unavailable: ${it.javaClass.simpleName}") }
+    }
+
+    private fun unregisterBluetoothStateReceiver() {
+        val receiver = bluetoothStateReceiver ?: return
+        bluetoothStateReceiver = null
+        runCatching { unregisterReceiver(receiver) }
+    }
+
+    private fun resumeWirelessAfterBluetoothTurnedOn() {
+        if (!wirelessEnabled || !bluetoothOffPending) return
+        if (shuttingDown.get() || menuOpen || handshakeResetInProgress) return
+        if (!CarPlayBackgroundSession.isOwner(this)) return
+        if (activeAirPlaySession != null) return
+        // An attempt that is already running needs no restart; a stopped or scheduled one does. A
+        // failed attempt leaves its controller assigned until the next restart, so controller == null
+        // is not required here.
+        if (controller != null && !reconnectScheduled && !startupRetryStopped) return
+        appendLog("Bluetooth turned on; resuming wireless CarPlay")
+        bluetoothOffPending = false
+        startupRetryBudget.manualRetry()
+        startupRetryStopped = false
+        startupRetryButton?.visibility = View.GONE
+        reconnectAttempts = 0
+        if (activeDisplaySize != null) {
+            restartCarPlay(getString(R.string.connecting_to_your_iphone))
+        } else {
+            maybeStartCarPlay()
+        }
     }
 
     /** Full-stack fallback when an AirPlay-only reconnect is unavailable. */

@@ -15,7 +15,14 @@ enum class WirelessStartupFailure {
     HOTSPOT_NOT_READY, FIRST_TCP_TIMEOUT, HOTSPOT_CONFIGURATION,
 
     /** The head unit's Android Bluetooth accepts connections that reach no phone. */
-    BLUETOOTH_UNUSABLE;
+    BLUETOOTH_UNUSABLE,
+
+    /**
+     * The head unit's Bluetooth radio is off, so the iPhone cannot be reached at all. It is retried,
+     * but only through the host screen's startup retry budget: the driver may take minutes to switch it
+     * on, and retrying forever fills the log and rebuilds CarPlay.
+     */
+    BLUETOOTH_OFF;
 
     /** False when no further attempt can change what went wrong. */
     val retryable: Boolean get() = this != HOTSPOT_CONFIGURATION && this != BLUETOOTH_UNUSABLE
