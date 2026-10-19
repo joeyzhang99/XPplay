@@ -1,6 +1,7 @@
 package com.shilapi.xcertplay.airplay
 
 import android.util.Log
+import com.shilapi.xcertplay.media.MicrophoneFormat
 import com.shilapi.xcertplay.transport.BlockingDuplexByteStream
 import java.io.Closeable
 import java.io.File
@@ -610,6 +611,11 @@ class CarPlayMediaEngine(
     ): MicrophoneConfig? {
         if (!microphoneEnabled || type != STREAM_TYPE_MAIN_AUDIO) return null
         if (!wantsMicrophone(format.audioType, stream)) return null
+        // xcertplay 1.4.2 refuses a format the uplink cannot encode before capture starts.
+        MicrophoneFormat.rejection(format.codec, format.channels)?.let { reason ->
+            Log.w(TAG, "$reason type=${format.audioType} rate=${format.sampleRate}")
+            return null
+        }
         val port = (stream["dataPort"] as? Number)?.toInt() ?: return null
         if (port !in 1..65535) return null
         val host = session.remoteAddress ?: return null

@@ -96,8 +96,25 @@ internal class MicrophoneUplink(
             else -> MediaRecorder.AudioSource.MIC
         }
         if (config.codec == AudioCodecKind.AAC_ELD) {
-            require(config.channels == 1 && config.sampleRate <= 16_000)
-            eldEncoder = AacEldEncoder.create(config.sampleRate, config.samplesPerPacket, config.bitrate ?: 48_000)
+            // xcertplay 1.4.2: only the encoder's mono limit is real; the capture rate may follow
+            // the phone's negotiated rate instead of being capped at 16 kHz.
+            val rejection = MicrophoneFormat.rejection(config.codec, config.channels)
+            if (rejection != null) {
+                Log.w(TAG, rejection)
+                stats.failure(MicrophoneFailureStage.ENCODER)
+                running.set(false)
+                return false
+            }
+            eldEncoder = try {
+                AacEldEncoder.create(config.sampleRate, config.samplesPerPacket, config.bitrate ?: 48_000)
+            } catch (error: Exception) {
+                // An encoder that cannot handle the negotiated rate must disable the uplink, not
+                // escape start() and take the caller's audio routing down with it.
+                Log.w(TAG, "microphone AAC-ELD encoder unavailable at ${config.sampleRate} Hz", error)
+                stats.failure(MicrophoneFailureStage.ENCODER, error)
+                running.set(false)
+                return false
+            }
         }
         val nextEncoder = if (config.codec == AudioCodecKind.OPUS) {
             opusEncoderFactory(config.bitrate ?: 48_000)
@@ -283,7 +300,8 @@ internal class MicrophoneUplink(
     }
 
     private fun capture(recorder: AudioRecord, socket: DatagramSocket) {
-        runCatching { android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO) }
+        // xcertplay 1.4.2 raises the capture thread above the audio band it shares with rendering.
+        runCatching { android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO) }
         val frame = ByteArray(config.frameBytes)
         val readBuffer = ByteArray(maxOf(frame.size, MIN_READ_BYTES))
         val counters = MicrophoneCounters()
