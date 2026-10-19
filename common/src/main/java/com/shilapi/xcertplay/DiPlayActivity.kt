@@ -4569,10 +4569,14 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
     private fun musicBufferChoice(card: LinearLayout, wireless: Boolean) {
         val buffer = com.shilapi.xcertplay.media.MediaAudioBuffer
         val presets = if (wireless) buffer.wirelessPresets else buffer.wiredPresets
+        // Wireless and wired have different defaults now, so the "default" label follows the transport.
+        val defaultMillis = if (wireless) buffer.WIRELESS_DEFAULT_MILLIS else buffer.DEFAULT_MILLIS
         val labels = presets.map { millis ->
-            when (millis) {
-                buffer.DEFAULT_MILLIS -> getString(R.string.s_300_ms_default)
-                buffer.MOST_STABLE_MILLIS -> getString(R.string.s_1000_ms_most_stable)
+            when {
+                millis == defaultMillis -> getString(
+                    if (wireless) R.string.s_500_ms_default else R.string.s_300_ms_default,
+                )
+                millis == buffer.MOST_STABLE_MILLIS -> getString(R.string.s_1000_ms_most_stable)
                 else -> getString(R.string.settings_music_buffer_ms, millis)
             }
         }

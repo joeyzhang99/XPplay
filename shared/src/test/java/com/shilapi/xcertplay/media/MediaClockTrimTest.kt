@@ -6,6 +6,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import kotlin.math.abs
 import kotlin.random.Random
 
 class MediaClockTrimTest {
@@ -101,9 +102,10 @@ class MediaClockTrimTest {
         // The iPhone paused: no write for 2 s, so no update even though the last level was low.
         assertNull(trim.rateDue(2_000_000_000L))
         assertEquals(47_280, trim.rate)
-        // Music resumes at the target level: the average restarts there.
+        // Music resumes at the target level: the average restarts there and the rate ramps back,
+        // at most MAX_STEP_PER_UPDATE per second instead of jumping in one step.
         trim.sample(14_400, 2_100_000_000L)
-        assertEquals(48_000, trim.rateDue(2_100_000_000L))
+        assertEquals(47_424, trim.rateDue(2_100_000_000L))
     }
 
     @Test fun aLongPauseDoesNotCountAsDrift() {
@@ -113,8 +115,34 @@ class MediaClockTrimTest {
         // Five minutes later music resumes with a short first burst: one step, not 300 s, is integrated.
         val resumeNs = 300_000_000_000L
         trim.sample(10_080, resumeNs)
-        assertEquals(47_539, trim.rateDue(resumeNs))
+        assertEquals(47_856, trim.rateDue(resumeNs))
         assertEquals(-0.0006, MediaClockTrim.learnedTrim, 1e-9)
+    }
+
+    // A CarPlay report showed the rate pinned at +1.5 % for 75 % of a music session: bursty arrivals
+    // swung the queued level and the proportional term alone hit the bound.
+    @Test fun jitterAroundTheTargetDoesNotMoveTheRate() {
+        val trim = MediaClockTrim(48_000, 14_400)
+        trim.sample(14_400, 0)
+        trim.rateDue(0)
+        for (second in 1..10) {
+            val level = if (second % 2 == 0) 15_840L else 13_824L
+            trim.sample(level, second * 1_000_000_000L)
+            assertNull(trim.rateDue(second * 1_000_000_000L))
+        }
+        assertEquals(48_000, trim.rate)
+        assertEquals(0.0, MediaClockTrim.learnedTrim, 1e-9)
+    }
+
+    @Test fun aCorrectionRampsInsteadOfJumpingToTheBound() {
+        val trim = MediaClockTrim(48_000, 14_400)
+        trim.sample(10_080, 0) // 30 % below the target
+        val first = trim.rateDue(0)!!
+        trim.sample(10_080, 1_000_000_000L)
+        val second = trim.rateDue(1_000_000_000L)!!
+        val maxStep = (48_000 * MediaClockTrim.MAX_STEP_PER_UPDATE).toInt()
+        assertTrue("first=$first second=$second", abs(second - first) <= maxStep)
+        assertTrue("second=$second", second >= 47_280)
     }
 
     @Test fun aNewStreamStartsFromTheLearnedTrim() {

@@ -10,8 +10,15 @@ package com.shilapi.xcertplay.media
  */
 object MediaAudioBuffer {
     const val DEFAULT_MILLIS = 300
+
+    /**
+     * Wireless starts at 500 ms: a CarPlay report showed audio arriving in ~400 ms bursts, which the
+     * 300 ms default could not outlast, so music paused for 30–150 ms every few minutes. Wired USB
+     * has no radio gaps and keeps [DEFAULT_MILLIS].
+     */
+    const val WIRELESS_DEFAULT_MILLIS = 500
     const val MOST_STABLE_MILLIS = 1000
-    val wirelessPresets = listOf(DEFAULT_MILLIS, 500, MOST_STABLE_MILLIS)
+    val wirelessPresets = listOf(300, WIRELESS_DEFAULT_MILLIS, MOST_STABLE_MILLIS)
     val wiredPresets = listOf(50, 100, 150, 200) + (DEFAULT_MILLIS..MOST_STABLE_MILLIS step 100)
     /** Every delay a session can use; [plan] accepts any of them. */
     val presets = (wiredPresets + wirelessPresets).distinct().sorted()
@@ -21,7 +28,7 @@ object MediaAudioBuffer {
     private const val MIN_START_BUFFER_BYTES = 4 * 1024
 
     fun sanitize(millis: Int): Int = millis.takeIf { it in presets } ?: DEFAULT_MILLIS
-    fun sanitizeWireless(millis: Int): Int = millis.takeIf { it in wirelessPresets } ?: DEFAULT_MILLIS
+    fun sanitizeWireless(millis: Int): Int = millis.takeIf { it in wirelessPresets } ?: WIRELESS_DEFAULT_MILLIS
     fun sanitizeWired(millis: Int): Int = millis.takeIf { it in wiredPresets } ?: DEFAULT_MILLIS
 
     data class Plan(val trackBufferBytes: Int, val startBytes: Int)

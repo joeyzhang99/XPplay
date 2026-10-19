@@ -1,5 +1,6 @@
 package com.shilapi.xcertplay.media
 
+import kotlin.math.abs
 import kotlin.math.exp
 import kotlin.math.roundToInt
 
@@ -12,6 +13,11 @@ import kotlin.math.roundToInt
  * controller that, once a second, trims the track's playback rate so the level stays at the start threshold.
  * The trim is bounded by [MAX_TRIM] (26 cents at most) and settles at the head unit's own drift, which is a
  * hardware constant, so the next music stream starts from the trim this one learned.
+ *
+ * A head unit's report showed the controller pinned at +1.5 % for 75 % of a music session: bursty arrivals
+ * swing the queued level by tens of percent, and the proportional term alone was enough to hit the bound.
+ * Rate changes are therefore limited to [MAX_STEP_PER_UPDATE] per second and a level inside the
+ * deadband holds the current rate, so ordinary jitter cannot make the pitch jump between the bounds.
  */
 internal class MediaClockTrim(
     private val sampleRate: Int,
@@ -53,11 +59,21 @@ internal class MediaClockTrim(
         // A pause between updates is not drift: integrate at most one normal step over it.
         val seconds = if (previousUpdate == null) 0.0 else ((nowNs - previousUpdate) / 1e9).coerceAtMost(MAX_STEP_SECONDS)
         lastUpdateNs = nowNs
-        if (!compressedBacklog) {
+        // Inside the deadband the level is where it should be: keep the learned drift and give the
+        // proportional term back, instead of chasing jitter towards the bound. Above the target a
+        // deep queue is harmless, so the band is wider there; below it the queue is the only protection
+        // against a radio gap, so a dip is corrected much sooner.
+        val withinDeadband = error in -DEADBAND_LOW..DEADBAND_HIGH
+        if (!withinDeadband && !compressedBacklog) {
             integral = (integral + KI * error * seconds).coerceIn(-MAX_TRIM, MAX_TRIM)
             learnedTrim = integral
         }
-        val next = (sampleRate * (1.0 + (KP * error + integral).coerceIn(-MAX_TRIM, MAX_TRIM))).roundToInt()
+        val proportional = if (withinDeadband) 0.0 else KP * error
+        val goal = (sampleRate * (1.0 + (proportional + integral).coerceIn(-MAX_TRIM, MAX_TRIM))).roundToInt()
+        // The first update after (re)starting music may jump to the learned drift; later ones ramp so
+        // a level swing cannot shift the pitch audibly within one second.
+        val maxStep = (sampleRate * MAX_STEP_PER_UPDATE).roundToInt().coerceAtLeast(1)
+        val next = if (previousUpdate == null) goal else goal.coerceIn(rate - maxStep, rate + maxStep)
         if (next == rate) return null
         rate = next
         return next
@@ -66,6 +82,13 @@ internal class MediaClockTrim(
     internal companion object {
         /** At most 1.5 % slower or faster: 26 cents, above the 0.76 % seen on #610. */
         const val MAX_TRIM = 0.015
+
+        /** Level error (fraction of the target) that is treated as jitter, not as clock drift. */
+        const val DEADBAND_HIGH = 0.2
+        const val DEADBAND_LOW = 0.05
+
+        /** At most 0.3 % of the sample rate per update, so a correction ramps instead of jumping. */
+        const val MAX_STEP_PER_UPDATE = 0.003
         const val KP = 0.03
         /** Per second, per unit of level error. */
         const val KI = 0.001

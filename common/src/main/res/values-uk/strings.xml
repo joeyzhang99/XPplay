@@ -332,6 +332,7 @@
     <string name="s_2_4_ghz">2,4 ГГц</string>
     <string name="s_2_pair_your_iphone">2 · Спарте свій iPhone</string>
     <string name="s_300_ms_default">300 мс · типово</string>
+    <string name="s_500_ms_default">500 мс · типово</string>
     <string name="s_30_fps_lighter_load">30 кадрів/с · менше навантаження</string>
     <string name="s_3_connect">3 · Підключіться</string>
     <string name="s_3_tap_check_and_enable_below_this_enables_the_cluster_ma">3. Натисніть «Перевірити й увімкнути» нижче. Це ввімкне карту на панелі приладів та автоматичне стеження за темою. Активний сеанс CarPlay перепідключиться один раз. Після цього комп’ютер можна відключити.</string>

@@ -1,6 +1,7 @@
 package com.shilapi.xcertplay.media
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class MediaAudioBufferTest {
@@ -42,9 +43,18 @@ class MediaAudioBufferTest {
     @Test
     fun `wireless keeps the classic presets`() {
         assertEquals(listOf(300, 500, 1000), MediaAudioBuffer.wirelessPresets)
-        assertEquals(MediaAudioBuffer.DEFAULT_MILLIS, MediaAudioBuffer.sanitizeWireless(50))
-        assertEquals(MediaAudioBuffer.DEFAULT_MILLIS, MediaAudioBuffer.sanitizeWireless(400))
+        assertEquals(MediaAudioBuffer.WIRELESS_DEFAULT_MILLIS, MediaAudioBuffer.sanitizeWireless(50))
+        assertEquals(MediaAudioBuffer.WIRELESS_DEFAULT_MILLIS, MediaAudioBuffer.sanitizeWireless(400))
         assertEquals(50, MediaAudioBuffer.sanitizeWired(50))
+    }
+
+    @Test
+    fun `wireless defaults above the wired 300 ms so ~400 ms radio gaps do not starve music`() {
+        assertEquals(500, MediaAudioBuffer.WIRELESS_DEFAULT_MILLIS)
+        assertTrue(MediaAudioBuffer.WIRELESS_DEFAULT_MILLIS > MediaAudioBuffer.DEFAULT_MILLIS)
+        // The 500 ms preset also leaves 200 ms of headroom above the start level.
+        assertEquals(96_000, MediaAudioBuffer.plan(true, 48_000, 2, 7_680, MediaAudioBuffer.WIRELESS_DEFAULT_MILLIS).startBytes)
+        assertEquals(134_400, MediaAudioBuffer.plan(true, 48_000, 2, 7_680, MediaAudioBuffer.WIRELESS_DEFAULT_MILLIS).trackBufferBytes)
     }
 
     @Test
@@ -68,6 +78,7 @@ class MediaAudioBufferTest {
     @Test
     fun `unknown delay falls back to the default`() {
         assertEquals(MediaAudioBuffer.DEFAULT_MILLIS, MediaAudioBuffer.sanitize(250))
+        assertEquals(MediaAudioBuffer.WIRELESS_DEFAULT_MILLIS, MediaAudioBuffer.sanitizeWireless(250))
         assertEquals(57_600, MediaAudioBuffer.plan(true, 48_000, 2, 7_680, mediaMillis = 42).startBytes)
     }
 
