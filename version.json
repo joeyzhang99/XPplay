@@ -1,17 +1,17 @@
 [
   {
-    "tag_name": "v1.4.5",
-    "name": "XPplay v1.4.5",
+    "tag_name": "v1.4.6",
+    "name": "XPplay v1.4.6",
     "draft": false,
     "prerelease": false,
     "assets": [
       {
-        "name": "XPplay-V1.4.5-release.apk",
-        "browser_download_url": "https://github.com/joeyzhang99/XPplay/releases/download/v1.4.5/XPplay-V1.4.5-release.apk"
+        "name": "XPplay-V1.4.6-release.apk",
+        "browser_download_url": "https://github.com/joeyzhang99/XPplay/releases/download/v1.4.6/XPplay-V1.4.6-release.apk"
       },
       {
         "name": "SHA256SUMS.txt",
-        "browser_download_url": "https://github.com/joeyzhang99/XPplay/releases/download/v1.4.5/SHA256SUMS.txt"
+        "browser_download_url": "https://github.com/joeyzhang99/XPplay/releases/download/v1.4.6/SHA256SUMS.txt"
       }
     ]
   }
