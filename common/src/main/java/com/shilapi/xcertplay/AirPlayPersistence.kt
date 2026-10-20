@@ -79,6 +79,7 @@ object AirPlayPersistence {
     private const val KEY_MEDIA_BUFFER_MS = "media_buffer_ms" // wireless; was shared by both transports
     private const val KEY_WIRED_MEDIA_BUFFER_MS = "wired_media_buffer_ms"
     private const val KEY_MAIN_BUFFERED_AUDIO = "main_buffered_audio"
+    private const val KEY_WIFI_HIGH_PERFORMANCE = "wifi_high_performance"
     private const val KEY_SPEECH_WITHOUT_8_16_KHZ = "speech_without_8_16_khz"
     private const val KEY_CAR_BLUETOOTH_AUDIO = "car_bluetooth_audio"
     private const val KEY_CALL_ECHO_CANCELLATION = "call_echo_cancellation"
@@ -707,7 +708,7 @@ object AirPlayPersistence {
     fun loadMediaBufferMillis(context: Context, wireless: Boolean): Int {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val buffer = com.shilapi.xcertplay.media.MediaAudioBuffer
-        // A fresh install has no saved value: wireless starts at its own default (500 ms, radio gaps)
+        // A fresh install has no saved value: wireless starts at its own default (1000 ms, radio gaps)
         // while wired keeps the original 300 ms. Once either transport is saved, its value is used.
         if (!prefs.contains(KEY_MEDIA_BUFFER_MS) && !prefs.contains(KEY_WIRED_MEDIA_BUFFER_MS)) {
             return if (wireless) buffer.WIRELESS_DEFAULT_MILLIS else buffer.DEFAULT_MILLIS
@@ -796,6 +797,19 @@ object AirPlayPersistence {
                 .putInt(KEY_WIRED_MEDIA_BUFFER_MS, com.shilapi.xcertplay.media.MediaAudioBuffer.sanitizeWired(millis))
                 .apply()
         }
+    }
+
+    /**
+     * Keep the head unit's Wi-Fi station out of power saving while a wireless session runs. On by
+     * default: the 2026-10-20 report showed 0.5–1.2 s link stalls under the default policy, and the
+     * setting is an experiment the driver can turn off if it changes nothing or costs power.
+     */
+    fun loadWifiHighPerformance(context: Context): Boolean =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_WIFI_HIGH_PERFORMANCE, true)
+
+    fun saveWifiHighPerformance(context: Context, enabled: Boolean) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putBoolean(KEY_WIFI_HIGH_PERFORMANCE, enabled).apply()
     }
 
     /** DiPlay's own experimental echo canceller on CarPlay call audio; opt-in, applies at reconnect. */

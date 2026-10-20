@@ -322,7 +322,7 @@
     <string name="s_1_open_car_hotspot_settings_turn_the_hotspot_on_and_sele">1. Откройте настройки точки доступа автомобиля, включите её и выберите 5 ГГц, если доступно.\n2. Точно скопируйте ниже её имя и пароль.\n3. Оставляйте точку доступа включённой при подключении. XPplay передаёт данные по Bluetooth; iPhone подключится автоматически.</string>
     <string name="s_2_pair_your_iphone">2 · Свяжите iPhone</string>
     <string name="s_300_ms_default">300 мс · по умолчанию</string>
-    <string name="s_500_ms_default">500 мс · по умолчанию</string>
+    <string name="s_1000_ms_default_most_stable">1000 мс · по умолчанию (самый стабильный)</string>
     <string name="s_30_fps_lighter_load">30 кадров/с · меньшая нагрузка</string>
     <string name="s_3_connect">3 · Подключитесь</string>
     <string name="s_3_tap_check_and_enable_below_this_enables_the_cluster_ma">3. Нажмите «Проверить и включить» ниже. Это включит карту комбинации и автоматическое следование теме. Активный сеанс CarPlay переподключится один раз. После этого можно отключить компьютер.</string>
@@ -863,4 +863,7 @@
     <string name="settings_quick_button">Кнопка настроек на экране</string>
     <string name="settings_quick_button_description">На изображении CarPlay отображается шестерёнка: нажмите, чтобы открыть эти настройки. Долгое нажатие скрывает её.</string>
     <string name="quick_settings_hidden_hint">Кнопка скрыта. Вернуть её можно в настройках XPplay.</string>
+    <string name="settings_wifi_high_performance">Высокопроизводительный Wi-Fi (эксперимент)</string>
+    <string name="settings_wifi_high_performance_description">Не даёт Wi-Fi переходить в режим энергосбережения при беспроводном подключении. Может уменьшить зависания видео и музыки из-за канала; расходует больше энергии.</string>
+    <string name="wired_carplay_unavailable_using_wireless">Проводной CarPlay не запускается на этом ГУ (нет экрана согласия VPN). Продолжаем по Wi-Fi.</string>
 </resources>

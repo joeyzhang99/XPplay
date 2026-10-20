@@ -600,9 +600,12 @@ class CarPlayHostSettingsTest {
         assertEquals(0, field("restartGeneration"))
     }
 
-    @Test fun iphoneAttachmentSwitchesToWiredTransportWithoutFinishing() {
+    // A USB plug asks to try wired CarPlay for this run, but it must not rewrite the saved wireless
+    // transport: this head unit cannot show the VPN consent dialog, so the next launch would be stuck.
+    @Test fun iphoneAttachmentTriesWiredForThisRunWithoutChangingTheSavedTransport() {
         org.robolectric.shadows.ShadowVpnService.setPrepareResult(null)
         attachController()
+        setField("controller", null) // idle: the wired trial may start
         AirPlayPersistence.saveWirelessEnabled(activity, true)
         invoke("loadPersistedSettings")
         val device = mock(UsbDevice::class.java)
@@ -610,8 +613,9 @@ class CarPlayHostSettingsTest {
         val intent = Intent(UsbManager.ACTION_USB_DEVICE_ATTACHED).putExtra(UsbManager.EXTRA_DEVICE, device)
         activity.javaClass.getDeclaredMethod("onNewIntent", Intent::class.java)
             .apply { isAccessible = true }.invoke(activity, intent)
-        assertFalse(AirPlayPersistence.loadWirelessEnabled(activity))
+        assertTrue(AirPlayPersistence.loadWirelessEnabled(activity))
         assertFalse(field("wirelessEnabled") as Boolean)
+        assertTrue(field("usbAttachWiredTrial") as Boolean)
         assertTrue(field("vpnReady") as Boolean)
         assertFalse((field("shuttingDown") as AtomicBoolean).get())
         assertFalse(activity.isFinishing)
@@ -621,6 +625,7 @@ class CarPlayHostSettingsTest {
     @Test fun switchingToUsbRequestsVpnConsentAndDoesNotRepeatPendingConsent() {
         org.robolectric.shadows.ShadowVpnService.setPrepareResult(Intent("test.VPN_CONSENT"))
         attachController()
+        setField("controller", null) // idle: the wired trial may start
         AirPlayPersistence.saveWirelessEnabled(activity, true)
         invoke("loadPersistedSettings")
         setField("vpnReady", true) // Previously granted permission may have been revoked.
@@ -638,7 +643,9 @@ class CarPlayHostSettingsTest {
         assertFalse(activity.isFinishing)
     }
 
-    @Test fun usbAttachmentClosesSettingsAndRestartsInPlace() {
+    // A cable plugged in while CarPlay runs (usually to charge) must not interrupt the session or
+    // close the settings overlay; only an idle screen may try the USB path.
+    @Test fun usbAttachmentDoesNotInterruptARunningWirelessSession() {
         org.robolectric.shadows.ShadowVpnService.setPrepareResult(null)
         attachController()
         AirPlayPersistence.saveWirelessEnabled(activity, true)
@@ -650,11 +657,11 @@ class CarPlayHostSettingsTest {
         val intent = Intent(UsbManager.ACTION_USB_DEVICE_ATTACHED).putExtra(UsbManager.EXTRA_DEVICE, device)
         activity.javaClass.getDeclaredMethod("onNewIntent", Intent::class.java).apply { isAccessible = true }
             .invoke(activity, intent)
-        assertFalse(field("menuOpen") as Boolean)
-        assertFalse(field("wirelessEnabled") as Boolean)
-        assertTrue(field("vpnReady") as Boolean)
-        assertNull(field("controller"))
-        assertEquals(1, field("restartGeneration"))
+        assertTrue(field("menuOpen") as Boolean)
+        assertTrue(field("wirelessEnabled") as Boolean)
+        assertTrue(AirPlayPersistence.loadWirelessEnabled(activity))
+        assertEquals(0, field("restartGeneration"))
+        assertNotNull(field("controller"))
         assertFalse(activity.isFinishing)
     }
 

@@ -20,8 +20,8 @@ class MediaBufferPersistenceTest {
     }
 
     @Test fun freshInstallUsesEachTransportsDefault() {
-        // Wireless starts at 500 ms so ~400 ms radio gaps do not starve music; wired keeps 300 ms.
-        assertEquals(500, AirPlayPersistence.loadMediaBufferMillis(context, wireless = true))
+        // Wireless starts at 1000 ms so 0.5-1.1 s link stalls do not starve music; wired keeps 300 ms.
+        assertEquals(1000, AirPlayPersistence.loadMediaBufferMillis(context, wireless = true))
         assertEquals(300, AirPlayPersistence.loadMediaBufferMillis(context, wireless = false))
     }
 
@@ -36,7 +36,7 @@ class MediaBufferPersistenceTest {
         prefs.edit().putInt("media_buffer_ms", 50).apply()
         assertEquals(50, AirPlayPersistence.loadMediaBufferMillis(context, wireless = false))
         // 50 ms is not a wireless preset, so wireless falls back to its own default.
-        assertEquals(500, AirPlayPersistence.loadMediaBufferMillis(context, wireless = true))
+        assertEquals(1000, AirPlayPersistence.loadMediaBufferMillis(context, wireless = true))
     }
 
     @Test fun changingWirelessDoesNotMoveAnInheritedWiredDelay() {
@@ -48,7 +48,13 @@ class MediaBufferPersistenceTest {
 
     @Test fun wirelessRejectsWiredOnlyPresets() {
         AirPlayPersistence.saveMediaBufferMillis(context, wireless = true, millis = 100)
-        assertEquals(500, AirPlayPersistence.loadMediaBufferMillis(context, wireless = true))
+        assertEquals(1000, AirPlayPersistence.loadMediaBufferMillis(context, wireless = true))
+    }
+
+    @Test fun highPerformanceWifiIsOnByDefaultAndCanBeTurnedOff() {
+        assertEquals(true, AirPlayPersistence.loadWifiHighPerformance(context))
+        AirPlayPersistence.saveWifiHighPerformance(context, false)
+        assertEquals(false, AirPlayPersistence.loadWifiHighPerformance(context))
     }
 
     @Test fun anExplicitWirelessChoiceSurvives() {

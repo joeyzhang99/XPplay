@@ -332,7 +332,7 @@
     <string name="s_2_4_ghz">2.4 GHz</string>
     <string name="s_2_pair_your_iphone">2 · iPhoneをペアリング</string>
     <string name="s_300_ms_default">300 ms · 標準</string>
-    <string name="s_500_ms_default">500 ms · 標準</string>
+    <string name="s_1000_ms_default_most_stable">1000 ms · 標準（最も安定）</string>
     <string name="s_30_fps_lighter_load">30 fps · 負荷が軽い</string>
     <string name="s_3_connect">3 · 接続</string>
     <string name="s_3_tap_check_and_enable_below_this_enables_the_cluster_ma">3. 下の「確認して有効化」をタップします。メーター内地図とテーマの自動追従が有効になります。接続中のCarPlayは1回再接続します。</string>
@@ -970,4 +970,7 @@
     <string name="quick_settings_hidden_hint">ボタンを非表示にしました。XPplay の設定で再表示できます。</string>
     <string name="settings_quick_button">画面の設定ボタン</string>
     <string name="settings_quick_button_description">CarPlay 画面に歯車を表示します。押すとこの設定を開きます。長押しで非表示。</string>
+    <string name="settings_wifi_high_performance">Wi-Fi 高性能モード（実験）</string>
+    <string name="settings_wifi_high_performance_description">ワイヤレス接続中に Wi-Fi の省電力を無効にします。リンクによる映像・音楽の途切れが減る可能性があります。消費電力は増えます。</string>
+    <string name="wired_carplay_unavailable_using_wireless">このヘッドユニットでは有線 CarPlay を開始できません（VPN 同意画面がありません）。Wi-Fi 接続を続けます。</string>
 </resources>

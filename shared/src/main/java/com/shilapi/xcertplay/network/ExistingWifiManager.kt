@@ -24,6 +24,8 @@ class ExistingWifiManager(
     private val passphrase: String,
     private val onDiagnostic: (String) -> Unit = {},
     private val onNetworkChanged: () -> Unit = {},
+    /** Keep the station out of Wi-Fi power saving: its wake-up batching shows up as link stalls. */
+    private val highPerformance: Boolean = false,
 ) : WirelessHotspotManager {
     private val connectivity = context.applicationContext.getSystemService(ConnectivityManager::class.java)
         ?: throw IllegalStateException("ConnectivityManager is unavailable")
@@ -38,6 +40,7 @@ class ExistingWifiManager(
     private var interfaceIndex = 0
     @Volatile private var interfaceName: String? = null
     private var callbackRegistered = false
+    private var wifiLock: WifiManager.WifiLock? = null
 
     private val callback = object : ConnectivityManager.NetworkCallback() {
         override fun onLost(network: Network) {
@@ -128,6 +131,7 @@ class ExistingWifiManager(
                 onDiagnostic("Existing Wi-Fi attached iface=$name host=${address.hostAddress} " +
                     "networkNameReadable=${liveSsid != null} channel=$channel security=${security()} " +
                     "receiverIdentity=saved")
+                if (highPerformance) acquireHighPerformanceLock()
                 return WirelessHotspotInfo(ssid, passphrase, security(), channel, frequency,
                     // The router's BSSID is not this receiver's AirPlay device identity.
                     null, name, address, when {
@@ -143,6 +147,33 @@ class ExistingWifiManager(
             Thread.sleep(200)
         }
         throw IOException("Existing Wi-Fi attachment was cancelled")
+    }
+
+    /**
+     * A report showed the link stalling for 0.5–1.2 s at a time while CarPlay shared a 2.4 GHz client
+     * connection; batching reads like that is what Wi-Fi power saving does. The lock asks Android to keep
+     * the station out of power save. It is an experiment: the vendor framework may ignore it, and it is
+     * released with the wireless session.
+     */
+    private fun acquireHighPerformanceLock() {
+        if (wifiLock != null) return
+        val lock = runCatching {
+            wifi.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "xpplay-wireless")
+        }.getOrNull()
+        if (lock == null) {
+            onDiagnostic("Wi-Fi high-performance lock unavailable")
+            return
+        }
+        lock.setReferenceCounted(false)
+        val acquired = runCatching { lock.acquire() }.isSuccess
+        if (acquired) wifiLock = lock
+        onDiagnostic("Wi-Fi high-performance lock acquired=$acquired")
+    }
+
+    private fun releaseHighPerformanceLock() {
+        val lock = wifiLock ?: return
+        wifiLock = null
+        if (runCatching { lock.release() }.isSuccess) onDiagnostic("Wi-Fi high-performance lock released")
     }
 
     private fun sameLink(properties: LinkProperties): Boolean =
@@ -174,6 +205,7 @@ class ExistingWifiManager(
         "existingWifiLink=${if (closed || invalidated.get()) "lost" else "attached"}"
 
     override fun close() {
+        releaseHighPerformanceLock()
         synchronized(lock) {
             closed = true
             if (callbackRegistered) {

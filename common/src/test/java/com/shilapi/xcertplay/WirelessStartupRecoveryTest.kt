@@ -1,5 +1,8 @@
 package com.shilapi.xcertplay
 
+import android.app.Activity
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import android.view.View
@@ -176,6 +179,55 @@ class WirelessStartupRecoveryTest {
         ReflectionHelpers.setField(activity, "restartGeneration", 0)
         ReflectionHelpers.callInstanceMethod<Unit>(activity, "resumeWirelessAfterBluetoothTurnedOn")
         assertEquals(0, ReflectionHelpers.getField<Int>(activity, "restartGeneration"))
+    }
+
+    // The head unit has no VPN consent dialog, so a USB-plug wired attempt on a wireless setup can
+    // never start. It must return to the saved wireless connection instead of staying on the error.
+    @Test fun aUsbWiredTrialReturnsToTheSavedWirelessConnectionWhenTheVpnDialogIsMissing() {
+        AirPlayPersistence.saveWirelessEnabled(activity, true)
+        ReflectionHelpers.setField(activity, "usbAttachWiredTrial", true)
+        ReflectionHelpers.setField(activity, "wirelessEnabled", false)
+        ReflectionHelpers.setField(activity, "vpnAdbConsentTried", true)
+        ReflectionHelpers.setField(activity, "menuOpen", true) // keep the start out of this test
+        ReflectionHelpers.setField(activity, "stageStatusView", TextView(activity))
+        ReflectionHelpers.callInstanceMethod<Unit>(activity, "onVpnConsentUnavailable",
+            from(String::class.java, "launch"),
+            ReflectionHelpers.ClassParameter.from(Intent::class.java, null),
+            from(RuntimeException::class.java, ActivityNotFoundException("no dialog")))
+        assertTrue(ReflectionHelpers.getField<Boolean>(activity, "wirelessEnabled"))
+        assertFalse(ReflectionHelpers.getField<Boolean>(activity, "usbAttachWiredTrial"))
+        assertTrue(AirPlayPersistence.loadWirelessEnabled(activity))
+    }
+
+    @Test fun aDeniedVpnConsentAlsoReturnsAUsbWiredTrialToWireless() {
+        AirPlayPersistence.saveWirelessEnabled(activity, true)
+        ReflectionHelpers.setField(activity, "usbAttachWiredTrial", true)
+        ReflectionHelpers.setField(activity, "wirelessEnabled", false)
+        ReflectionHelpers.setField(activity, "awaitingVpnConsent", true)
+        ReflectionHelpers.setField(activity, "menuOpen", true)
+        ReflectionHelpers.setField(activity, "stageStatusView", TextView(activity))
+        ReflectionHelpers.callInstanceMethod<Unit>(activity, "onVpnConsentResult",
+            from(Int::class.javaPrimitiveType, Activity.RESULT_CANCELED))
+        assertTrue(ReflectionHelpers.getField<Boolean>(activity, "wirelessEnabled"))
+        assertFalse(ReflectionHelpers.getField<Boolean>(activity, "usbAttachWiredTrial"))
+        assertTrue(AirPlayPersistence.loadWirelessEnabled(activity))
+    }
+
+    // A driver who saved wired as the transport keeps it: only a wireless preference falls back.
+    @Test fun aUsbWiredTrialLeavesAWiredPreferenceAlone() {
+        AirPlayPersistence.saveWirelessEnabled(activity, false)
+        ReflectionHelpers.setField(activity, "usbAttachWiredTrial", true)
+        ReflectionHelpers.setField(activity, "wirelessEnabled", false)
+        ReflectionHelpers.setField(activity, "vpnAdbConsentTried", true)
+        ReflectionHelpers.setField(activity, "menuOpen", true)
+        ReflectionHelpers.setField(activity, "stageStatusView", TextView(activity))
+        ReflectionHelpers.callInstanceMethod<Unit>(activity, "onVpnConsentUnavailable",
+            from(String::class.java, "launch"),
+            ReflectionHelpers.ClassParameter.from(Intent::class.java, null),
+            from(RuntimeException::class.java, ActivityNotFoundException("no dialog")))
+        assertFalse(ReflectionHelpers.getField<Boolean>(activity, "wirelessEnabled"))
+        assertFalse(ReflectionHelpers.getField<Boolean>(activity, "usbAttachWiredTrial"))
+        assertFalse(AirPlayPersistence.loadWirelessEnabled(activity))
     }
 
     /** Fails every attempt with [status] until the retries stop, checking the screen names [cause] meanwhile. */

@@ -334,7 +334,7 @@
     <string name="s_2_4_ghz">2.4 GHz</string>
     <string name="s_2_pair_your_iphone">2 · Pair your iPhone</string>
     <string name="s_300_ms_default">300 ms · default</string>
-    <string name="s_500_ms_default">500 ms · default</string>
+    <string name="s_1000_ms_default_most_stable">1000 ms · default (most stable)</string>
     <string name="s_30_fps_lighter_load">30 fps · lighter load</string>
     <string name="s_3_connect">3 · Connect</string>
     <string name="s_3_tap_check_and_enable_below_this_enables_the_cluster_ma">3. Tap Check and enable below. This enables the cluster map and automatic theme following. An active CarPlay session reconnects once. You can then disconnect the computer.</string>
@@ -971,4 +971,7 @@
     <string name="quick_settings_hidden_hint">Settings hidden. Long-press is off: re-enable it in XPplay settings.</string>
     <string name="settings_quick_button">Settings button on screen</string>
     <string name="settings_quick_button_description">A gear sits on the CarPlay picture; tap it to open these settings. Long-press it to hide.</string>
+    <string name="settings_wifi_high_performance">High-performance Wi-Fi (experimental)</string>
+    <string name="settings_wifi_high_performance_description">Keeps the Wi-Fi radio out of power saving while connected wirelessly. May reduce the video and music stalls the link causes; uses more power.</string>
+    <string name="wired_carplay_unavailable_using_wireless">Wired CarPlay cannot start on this head unit (it has no VPN consent screen). Continuing over Wi-Fi.</string>
 </resources>

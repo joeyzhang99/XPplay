@@ -332,7 +332,7 @@
     <string name="s_2_4_ghz">2,4 ГГц</string>
     <string name="s_2_pair_your_iphone">2 · Спарте свій iPhone</string>
     <string name="s_300_ms_default">300 мс · типово</string>
-    <string name="s_500_ms_default">500 мс · типово</string>
+    <string name="s_1000_ms_default_most_stable">1000 мс · типово (найстабільніше)</string>
     <string name="s_30_fps_lighter_load">30 кадрів/с · менше навантаження</string>
     <string name="s_3_connect">3 · Підключіться</string>
     <string name="s_3_tap_check_and_enable_below_this_enables_the_cluster_ma">3. Натисніть «Перевірити й увімкнути» нижче. Це ввімкне карту на панелі приладів та автоматичне стеження за темою. Активний сеанс CarPlay перепідключиться один раз. Після цього комп’ютер можна відключити.</string>
@@ -875,4 +875,7 @@
     <string name="settings_quick_button">Кнопка налаштувань на екрані</string>
     <string name="settings_quick_button_description">На зображенні CarPlay показано шестірню: торкніться, щоб відкрити ці налаштування. Довге натискання приховує її.</string>
     <string name="quick_settings_hidden_hint">Кнопку приховано. Повернути її можна в налаштуваннях XPplay.</string>
+    <string name="settings_wifi_high_performance">Високопродуктивний Wi-Fi (експеримент)</string>
+    <string name="settings_wifi_high_performance_description">Не дає Wi-Fi переходити в режим енергозбереження під час бездротового з\'єднання. Може зменшити зависання відео й музики через канал; споживає більше енергії.</string>
+    <string name="wired_carplay_unavailable_using_wireless">Дротовий CarPlay не запускається на цьому ГУ (немає екрана згоди VPN). Продовжуємо через Wi-Fi.</string>
 </resources>

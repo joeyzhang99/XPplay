@@ -49,12 +49,14 @@ class MediaAudioBufferTest {
     }
 
     @Test
-    fun `wireless defaults above the wired 300 ms so ~400 ms radio gaps do not starve music`() {
-        assertEquals(500, MediaAudioBuffer.WIRELESS_DEFAULT_MILLIS)
+    fun `wireless defaults to one second so the 0_5 to 1_1 s link stalls do not starve music`() {
+        // The 2026-10-20 report still underran with 500 ms: 23 of 172 five-second windows stalled for
+        // 500-1141 ms. One second of start level rides those out; wired keeps 300 ms.
+        assertEquals(1000, MediaAudioBuffer.WIRELESS_DEFAULT_MILLIS)
         assertTrue(MediaAudioBuffer.WIRELESS_DEFAULT_MILLIS > MediaAudioBuffer.DEFAULT_MILLIS)
-        // The 500 ms preset also leaves 200 ms of headroom above the start level.
-        assertEquals(96_000, MediaAudioBuffer.plan(true, 48_000, 2, 7_680, MediaAudioBuffer.WIRELESS_DEFAULT_MILLIS).startBytes)
-        assertEquals(134_400, MediaAudioBuffer.plan(true, 48_000, 2, 7_680, MediaAudioBuffer.WIRELESS_DEFAULT_MILLIS).trackBufferBytes)
+        val plan = MediaAudioBuffer.plan(true, 48_000, 2, 7_680, MediaAudioBuffer.WIRELESS_DEFAULT_MILLIS)
+        assertEquals(192_000, plan.startBytes)
+        assertEquals(230_400, plan.trackBufferBytes)
     }
 
     @Test

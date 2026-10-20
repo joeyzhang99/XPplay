@@ -322,7 +322,7 @@
     <string name="s_1_open_car_hotspot_settings_turn_the_hotspot_on_and_sele">1. افتح إعدادات نقطة اتصال السيارة، وشغّل نقطة الاتصال واختر 5 GHz إن توفر.\n2. انسخ الاسم وكلمة المرور أدناه كما هما تماماً.\n3. أبقِ نقطة اتصال السيارة مُشغّلة عند الاتصال. يرسل XPplay البيانات عبر البلوتوث؛ وينضم iPhone تلقائياً.</string>
     <string name="s_2_pair_your_iphone">2 · اقرن iPhone الخاص بك</string>
     <string name="s_300_ms_default">300 مللي ثانية · الافتراضي</string>
-    <string name="s_500_ms_default">500 مللي ثانية · الافتراضي</string>
+    <string name="s_1000_ms_default_most_stable">1000 مللي ثانية · الافتراضي (الأكثر استقرارًا)</string>
     <string name="s_30_fps_lighter_load">30 إطاراً/ث · حمل أخف</string>
     <string name="s_3_connect">3 · اتصل</string>
     <string name="s_3_tap_check_and_enable_below_this_enables_the_cluster_ma">3. اضغط «تحقق وفعّل» أدناه. يفعّل ذلك خريطة المجموعة واتباع السمة تلقائياً. ستعيد جلسة CarPlay النشطة الاتصال مرة واحدة. يمكنك بعد ذلك فصل الحاسوب.</string>
@@ -911,4 +911,7 @@
     <string name="settings_quick_button">زر الإعدادات على الشاشة</string>
     <string name="settings_quick_button_description">تظهر ترس على شاشة CarPlay؛ اضغط عليه لفتح هذه الإعدادات. اضغط مطولًا لإخفائه.</string>
     <string name="quick_settings_hidden_hint">تم إخفاء الزر. يمكنك إعادة إظهاره من إعدادات XPplay.</string>
+    <string name="settings_wifi_high_performance">Wi-Fi عالي الأداء (تجريبي)</string>
+    <string name="settings_wifi_high_performance_description">يمنع Wi-Fi من الدخول في وضع توفير الطاقة أثناء الاتصال اللاسلكي. قد يقلل تقطّع الفيديو والموسيقى بسبب الرابط؛ يستهلك طاقة أكبر.</string>
+    <string name="wired_carplay_unavailable_using_wireless">لا يمكن بدء CarPlay السلكي على هذه الوحدة (لا توجد شاشة موافقة VPN). نتابع عبر Wi-Fi.</string>
 </resources>

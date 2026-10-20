@@ -332,7 +332,7 @@
     <string name="s_2_4_ghz">2.4 GHz</string>
     <string name="s_2_pair_your_iphone">2 · 配對你的 iPhone</string>
     <string name="s_300_ms_default">300 毫秒 · 預設</string>
-    <string name="s_500_ms_default">500 毫秒 · 預設</string>
+    <string name="s_1000_ms_default_most_stable">1000 毫秒 · 預設（最穩定）</string>
     <string name="s_30_fps_lighter_load">30 fps · 較低負載</string>
     <string name="s_3_connect">3 · 連線</string>
     <string name="s_3_tap_check_and_enable_below_this_enables_the_cluster_ma">3. 點一下下方的「檢查並啟用」。這會啟用儀表板地圖和自動主題跟隨。進行中的 CarPlay 工作階段會重新連線一次，之後即可中斷電腦連線。</string>
@@ -929,4 +929,7 @@
     <string name="quick_settings_hidden_hint">按鈕已收起。可在 XPplay 設定中重新開啟。</string>
     <string name="settings_quick_button">畫面上的設定按鈕</string>
     <string name="settings_quick_button_description">CarPlay 畫面上顯示一個齒輪，點一下就能進這個設定頁；長按可收起。</string>
+    <string name="settings_wifi_high_performance">Wi-Fi 高效能模式（實驗）</string>
+    <string name="settings_wifi_high_performance_description">無線連線期間讓 Wi-Fi 不進入省電。可能減少鏈路造成的影片和音樂卡頓；會增加耗電。</string>
+    <string name="wired_carplay_unavailable_using_wireless">此車機無法啟動有線 CarPlay（沒有 VPN 授權畫面），已繼續使用無線連線。</string>
 </resources>

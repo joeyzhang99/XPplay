@@ -322,7 +322,7 @@
     <string name="s_1_open_car_hotspot_settings_turn_the_hotspot_on_and_sele">1. Abre los ajustes del punto de acceso del coche, actívalo y selecciona 5 GHz si está disponible.\n2. Copia abajo su nombre y contraseña exactamente.\n3. Deja el punto de acceso del coche activado al conectarte. XPplay envía los datos por Bluetooth; tu iPhone se une automáticamente.</string>
     <string name="s_2_pair_your_iphone">2 · Empareja tu iPhone</string>
     <string name="s_300_ms_default">300 ms · predeterminado</string>
-    <string name="s_500_ms_default">500 ms · predeterminado</string>
+    <string name="s_1000_ms_default_most_stable">1000 ms · predeterminado (más estable)</string>
     <string name="s_30_fps_lighter_load">30 img/s · carga más ligera</string>
     <string name="s_3_connect">3 · Conéctate</string>
     <string name="s_3_tap_check_and_enable_below_this_enables_the_cluster_ma">3. Toca «Comprobar y activar» abajo. Esto activa el mapa del cuadro y el seguimiento automático del tema. Una sesión de CarPlay activa se reconectará una vez. Después puedes desconectar el ordenador.</string>
@@ -863,4 +863,7 @@
     <string name="settings_quick_button">Botón de ajustes en pantalla</string>
     <string name="settings_quick_button_description">Un engranaje aparece sobre la imagen de CarPlay; tócalo para abrir estos ajustes. Mantén pulsado para ocultarlo.</string>
     <string name="quick_settings_hidden_hint">Botón oculto. Puedes volver a mostrarlo en los ajustes de XPplay.</string>
+    <string name="settings_wifi_high_performance">Wi-Fi de alto rendimiento (experimental)</string>
+    <string name="settings_wifi_high_performance_description">Evita que el Wi-Fi entre en ahorro de energía durante la conexión inalámbrica. Puede reducir los cortes de vídeo y música causados por el enlace; consume más energía.</string>
+    <string name="wired_carplay_unavailable_using_wireless">CarPlay por cable no puede iniciarse en esta unidad (no tiene pantalla de consentimiento de VPN). Continuamos por Wi-Fi.</string>
 </resources>

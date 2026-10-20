@@ -12,13 +12,14 @@ object MediaAudioBuffer {
     const val DEFAULT_MILLIS = 300
 
     /**
-     * Wireless starts at 500 ms: a CarPlay report showed audio arriving in ~400 ms bursts, which the
-     * 300 ms default could not outlast, so music paused for 30–150 ms every few minutes. Wired USB
-     * has no radio gaps and keeps [DEFAULT_MILLIS].
+     * Wireless starts at 1000 ms. A V1.4.6 report kept the 500 ms default but still underran six times in
+     * fifteen minutes of music: the link stalls for 500–1140 ms now and then (23 of 172 five-second
+     * windows), and a 400 ms batch leaves the queue only ~70 ms above empty at 500 ms. One second of
+     * start level rides those stalls out; Wired USB has no radio gaps and keeps [DEFAULT_MILLIS].
      */
-    const val WIRELESS_DEFAULT_MILLIS = 500
+    const val WIRELESS_DEFAULT_MILLIS = 1000
     const val MOST_STABLE_MILLIS = 1000
-    val wirelessPresets = listOf(300, WIRELESS_DEFAULT_MILLIS, MOST_STABLE_MILLIS)
+    val wirelessPresets = listOf(300, 500, MOST_STABLE_MILLIS)
     val wiredPresets = listOf(50, 100, 150, 200) + (DEFAULT_MILLIS..MOST_STABLE_MILLIS step 100)
     /** Every delay a session can use; [plan] accepts any of them. */
     val presets = (wiredPresets + wirelessPresets).distinct().sorted()

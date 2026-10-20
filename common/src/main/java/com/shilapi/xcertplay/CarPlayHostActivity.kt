@@ -172,6 +172,21 @@ class CarPlayHostActivity : ComponentActivity() {
     /** The last connection attempt stopped because the head unit's Bluetooth was off. */
     private var bluetoothOffPending = false
     private var bluetoothStateReceiver: BroadcastReceiver? = null
+    /**
+     * A USB plug switched this run to wired CarPlay for the driver to try, without changing the saved
+     * transport. If wired cannot start (this head unit has no VPN consent screen), it returns to wireless.
+     */
+    private var usbAttachWiredTrial = false
+    private val wifiLinkTicker = object : Runnable {
+        override fun run() {
+            if (!wirelessEnabled || activeAirPlaySession == null) return
+            if (AirPlayPersistence.loadWirelessHotspotMode(this@CarPlayHostActivity) ==
+                com.shilapi.xcertplay.orchestration.WirelessHotspotMode.EXISTING_WIFI) {
+                WifiLinkSnapshot.describe(this@CarPlayHostActivity)?.let { appendLog("Wireless link $it") }
+            }
+            mainHandler.postDelayed(this, WIFI_LINK_LOG_INTERVAL_MILLIS)
+        }
+    }
     private lateinit var airPlayIdentity: AirPlayIdentity
     private var languagePreferenceAtCreate = AppLocale.SYSTEM
 
@@ -206,6 +221,7 @@ class CarPlayHostActivity : ComponentActivity() {
         manualHotspotSecurity = manualHotspotSecurity,
         existingWifiSsid = existingWifiSsid,
         existingWifiPassphrase = existingWifiPassphrase,
+        wifiHighPerformance = AirPlayPersistence.loadWifiHighPerformance(this),
         locationReportingEnabled = locationReportingEnabled,
         availableCurrentMilliAmps = AirPlayPersistence.loadUsbChargingCurrent(this).milliAmps,
     )
@@ -741,9 +757,7 @@ class CarPlayHostActivity : ComponentActivity() {
         MapMirrors.sink = mirrorSink
         MapMirrors.onChanged = mirrorsChanged
         languagePreferenceAtCreate = AppLocale.preference(this)
-        if (isIphoneUsbAttachment(intent)) {
-            AirPlayPersistence.saveWirelessEnabled(this, false)
-        }
+        val usbAttached = isIphoneUsbAttachment(intent)
         if (runCatching { DiPlayBootstrap.ensure(this, AirPlayPersistence.loadMfiTarget(this)) }.isFailure) {
             OwnScreenStart.start(this, Intent(this, DiPlayActivity::class.java), ::appendLog)
             finish(); return
@@ -760,6 +774,15 @@ class CarPlayHostActivity : ComponentActivity() {
             resources.getBoolean(R.bool.config_advanced_audio_channel_mapping)
         airPlayIdentity = AirPlayPersistence.loadIdentity(this)
         loadPersistedSettings()
+        // A USB plug asks to try wired CarPlay for this run only; it must not rewrite the saved
+        // transport. A cable plugged in for charging used to leave the app on a wired screen that this
+        // head unit cannot get past (no VPN consent dialog), and the next launch stayed wired too.
+        if (usbAttached && wirelessEnabled) {
+            usbAttachWiredTrial = true
+            wirelessEnabled = false
+            wirelessPermissionsReady = true
+            appendLog("iPhone USB attached; trying wired CarPlay for this run (saved transport stays wireless)")
+        }
         locationPermissionAvailable = hasFineLocationPermission()
         setContentView(buildContentView())
         applyFullscreenMode()
@@ -947,6 +970,7 @@ class CarPlayHostActivity : ComponentActivity() {
             maybeStartCarPlay()
         } else {
             setStatus(R.string.vpn_consent_was_denied)
+            fallBackToWirelessIfWiredIsUnavailable("VPN consent was denied")
         }
     }
 
@@ -960,6 +984,25 @@ class CarPlayHostActivity : ComponentActivity() {
         appendLog(diagnostic)
         setStatus(R.string.vpn_authorization_unavailable)
         if (!vpnAdbConsentTried) preConsentVpnOverAdb()
+        fallBackToWirelessIfWiredIsUnavailable("VPN consent screen is missing")
+    }
+
+    /**
+     * Only a USB trial lands here: the saved transport is wireless, so wired was attempted just because
+     * the cable was plugged in. This head unit's Android has no VPN consent screen, so wired can never
+     * start; return to the wireless connection the driver actually saved.
+     */
+    private fun fallBackToWirelessIfWiredIsUnavailable(reason: String) {
+        if (!usbAttachWiredTrial) return
+        usbAttachWiredTrial = false
+        if (!AirPlayPersistence.loadWirelessEnabled(this)) return
+        wirelessEnabled = true
+        wirelessPermissionsReady = hasRequiredWirelessPermissions()
+        awaitingVpnConsent = false
+        vpnReady = false
+        appendLog("Wired CarPlay unavailable ($reason); returning to the saved wireless connection")
+        setStatus(R.string.wired_carplay_unavailable_using_wireless)
+        if (!menuOpen && !shuttingDown.get() && !isFinishing && !isDestroyed) requestStartupPrerequisites()
     }
 
     /** Without a consent dialog, the car's approved adb can allow the VPN instead (#604). */
@@ -1024,14 +1067,21 @@ class CarPlayHostActivity : ComponentActivity() {
         setIntent(intent)
         if (isIphoneUsbAttachment(intent)) {
             if (wirelessEnabled) {
-                if (menuOpen) cancelSettingsEdits()
-                AirPlayPersistence.saveWirelessEnabled(this, false)
-                wirelessEnabled = false
-                wirelessPermissionsReady = true
-                if (controller != null) {
-                    restartCarPlay("switching to USB")
+                when {
+                    // A cable plugged in while CarPlay runs must not interrupt it: charging is the
+                    // common case, and this head unit cannot start wired CarPlay at all.
+                    activeAirPlaySession != null ->
+                        appendLog("iPhone USB attached during a wireless session; keeping the wireless connection")
+                    controller != null -> Unit
+                    else -> {
+                        if (menuOpen) cancelSettingsEdits()
+                        usbAttachWiredTrial = true
+                        wirelessEnabled = false
+                        wirelessPermissionsReady = true
+                        appendLog("iPhone USB attached; trying wired CarPlay for this run (saved transport stays wireless)")
+                        requestStartupPrerequisites()
+                    }
                 }
-                requestStartupPrerequisites()
             } else if (controller == null) {
                 requestStartupPrerequisites()
             }
@@ -1421,6 +1471,7 @@ class CarPlayHostActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
+        mainHandler.removeCallbacks(wifiLinkTicker)
         mainHandler.removeCallbacks(hideTemporarySystemBars)
         discardLastPicture()
         if (pictureCopyThreadStarted) pictureCopyThread.quitSafely()
@@ -4533,6 +4584,7 @@ class CarPlayHostActivity : ComponentActivity() {
                     }
                     activeAirPlaySession = session
                     bluetoothOffPending = false
+                    if (!wirelessEnabled) usbAttachWiredTrial = false
                     val pending = pendingIphoneCornerMask
                     if (pending?.first === session) {
                         installIphoneCornerMask(session, pending.second.first, pending.second.second)
@@ -4546,6 +4598,8 @@ class CarPlayHostActivity : ComponentActivity() {
                     syncAirPlayDarkMode(ThemeModeDiagnostics.Source.SESSION_ACTIVE)
                     if (menuOpen) return@runOnUiThread
                     appendLog("AirPlay session active")
+                    mainHandler.removeCallbacks(wifiLinkTicker)
+                    mainHandler.postDelayed(wifiLinkTicker, WIFI_LINK_LOG_INTERVAL_MILLIS)
                 }
             }
 
@@ -4573,6 +4627,7 @@ class CarPlayHostActivity : ComponentActivity() {
                     }
                     if (controllerGeneration != restartGeneration || startupRetryStopped) return@runOnUiThread
                     startupRetryBudget.disconnected()
+                    mainHandler.removeCallbacks(wifiLinkTicker)
                     activeAirPlaySession = null
                     clearIphoneCornerMask()
                     CarPlayBackgroundSession.active = false
@@ -6061,6 +6116,7 @@ class CarPlayHostActivity : ComponentActivity() {
         const val RECONNECT_DELAY_MILLIS = 2_000L
         const val IAP_TUNNEL_RECONNECT_DELAY_MILLIS = 15_000L
         const val CONTROLLER_CLOSE_TIMEOUT_MILLIS = 4_000L
+        const val WIFI_LINK_LOG_INTERVAL_MILLIS = 30_000L
         const val AUDIO_CAPTURE_MARKER = "audio-capture.enabled"
         const val AUDIO_CAPTURE_DIRECTORY = "audio-captures"
         const val PROTOCOL_TRACE_PREFIX = "TRACE "

@@ -60,6 +60,8 @@ class CarPlayRuntimeConfig(
     val wifiP2pPreferredChannel: Int = WifiP2pChannels.AUTO,
     val existingWifiSsid: String = "",
     val existingWifiPassphrase: String = "",
+    /** Hold a high-performance Wi-Fi lock while the same-LAN link carries CarPlay (V1.4.7 experiment). */
+    val wifiHighPerformance: Boolean = false,
 ) {
     init {
         require(iphoneDevices.all { it.vendorId == APPLE_VENDOR_ID }) {

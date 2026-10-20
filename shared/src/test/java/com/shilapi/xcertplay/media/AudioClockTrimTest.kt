@@ -69,7 +69,9 @@ class AudioClockTrimTest {
         assertEquals(listOf(47_280), RateTrack.rates)
         type.getDeclaredMethod("logStatsIfDue", Boolean::class.javaPrimitiveType).apply { isAccessible = true }
             .invoke(renderer, true)
-        assertTrue(reports.toString(), reports.any { it.startsWith("audio stats") && it.contains(" playbackRate=47280 ended=true") })
+        assertTrue(reports.toString(), reports.any {
+            it.startsWith("audio stats") && it.contains("playbackRate=47280") && it.contains("ended=true")
+        })
     }
 
     @Test fun aTrackThatRefusesTheRateKeepsPlayingWithoutTheTrim() {

@@ -2071,6 +2071,7 @@ class CarPlayController(
             WirelessHotspotMode.EXISTING_WIFI -> ExistingWifiManager(
                 appContext, config.existingWifiSsid, config.existingWifiPassphrase, ::debugLog,
                 onNetworkChanged = { if (!isStaleWirelessRun(generation)) restartWireless() },
+                highPerformance = config.wifiHighPerformance,
             )
             WirelessHotspotMode.MANUAL -> ManualHotspotManager(
                 context = appContext,

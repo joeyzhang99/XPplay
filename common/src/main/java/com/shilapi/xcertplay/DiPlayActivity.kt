@@ -1866,6 +1866,12 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                 AirPlayPersistence.saveLowLatencyDecoder(this, it)
                 markReconnectNeeded()
             }
+            toggle(card, getString(R.string.settings_wifi_high_performance),
+                getString(R.string.settings_wifi_high_performance_description),
+                AirPlayPersistence.loadWifiHighPerformance(this)) {
+                AirPlayPersistence.saveWifiHighPerformance(this, it)
+                markReconnectNeeded()
+            }
             toggle(card, getString(R.string.call_echo_cancellation), getString(R.string.call_echo_cancellation_description),
                 AirPlayPersistence.loadCallEchoCancellation(this)) {
                 AirPlayPersistence.saveCallEchoCancellation(this, it)
@@ -4574,7 +4580,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         val labels = presets.map { millis ->
             when {
                 millis == defaultMillis -> getString(
-                    if (wireless) R.string.s_500_ms_default else R.string.s_300_ms_default,
+                    if (wireless) R.string.s_1000_ms_default_most_stable else R.string.s_300_ms_default,
                 )
                 millis == buffer.MOST_STABLE_MILLIS -> getString(R.string.s_1000_ms_most_stable)
                 else -> getString(R.string.settings_music_buffer_ms, millis)

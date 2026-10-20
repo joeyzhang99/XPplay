@@ -1798,6 +1798,11 @@ private class AudioRenderer(
     private var lastPlaybackHeadFrames: Long? = null
     private var maxWriteMs = 0L
     private var statsWindowStartNs = 0L
+    // Per-window extremes of the queued level: the 5 s snapshot alone cannot tell a stable queue
+    // from a batched one that swings between full and empty.
+    private var queueMinFrames = Long.MAX_VALUE
+    private var queueMaxFrames = 0L
+    private var rateChangesThisWindow = 0
     private var statsLastUnderruns = 0
     private var bytesPerSecond = 0
     private val bufferProgress = AudioBufferProgress(if (format.channels >= 2) 4 else 2)
@@ -2511,11 +2516,16 @@ private class AudioRenderer(
             // The track keeps its rate; music then plays as it did before the trim.
             clockTrim = null
             report("Audio: clock trim off audioType=${format.audioType} rate=$rate result=$result")
+        } else {
+            rateChangesThisWindow++
         }
     }
 
     private fun maintainPlaybackBuffer() {
         val track = track ?: return
+        val queuedBytes = bufferProgress.queuedBytes(track.playbackHeadPosition)
+        if (queuedBytes < queueMinFrames) queueMinFrames = queuedBytes
+        if (queuedBytes > queueMaxFrames) queueMaxFrames = queuedBytes
         if (bufferProgress.shouldRebuffer(mappedChannel == AudioChannel.MEDIA, playbackStarted,
                 track.underrunCount > underrunsAtPlaybackStart, queue.isEmpty(), track.playbackHeadPosition,
                 startThresholdBytes / 2L)) {
@@ -2532,7 +2542,13 @@ private class AudioRenderer(
             if (rebufferPauseReportCount < MAX_REBUFFER_REPORTS) {
                 rebufferPauseReportCount++
                 val retainedMs = if (bytesPerSecond > 0) prebufferBytes * 1000L / bytesPerSecond else 0L
-                report("Audio: rebuffer paused audioType=${format.audioType} rebufferCount=$rebufferCount retainedMs=$retainedMs")
+                val underrunsSinceStart = track.underrunCount - underrunsAtPlaybackStart
+                val sinceRxMs = lastArrivalNs.get().let { if (it == 0L) -1L else (System.nanoTime() - it) / 1_000_000L }
+                // Why the pause happened: hardware underrun plus an almost empty track, and how long the
+                // audio had been silent when it did. The next report can tell a link stall from a bug.
+                report("Audio: rebuffer paused audioType=${format.audioType} rebufferCount=$rebufferCount " +
+                    "retainedMs=$retainedMs underrunsSinceStart=$underrunsSinceStart " +
+                    "sinceRxMs=$sinceRxMs maxGapMs=${maxArrivalGapMs.get()} rate=${clockTrim?.rate ?: -1}")
             }
         }
         // A short final burst may never reach the start threshold. Play it after a bounded wait.
@@ -2578,7 +2594,8 @@ private class AudioRenderer(
             "lastWriteError=${lastWriteErrorCode ?: "none"} zeroWrites=$zeroWritesThisWindow " +
             "partialWrites=$partialWritesThisWindow " +
             "decoderDroppedTotal=$inputDropped outputBuffersTotal=$outputBuffers rebuffers=$rebufferCount " +
-            "playbackRate=${clockTrim?.rate ?: -1} ended=$force"
+            "playbackRate=${clockTrim?.rate ?: -1} rateChanges=$rateChangesThisWindow " +
+            "queueMinMs=${queueFramesToMs(queueMinFrames)} queueMaxMs=${queueFramesToMs(queueMaxFrames)} ended=$force"
         Log.i(STATS_TAG, line)
         report(line)
         if (format.codec != AudioCodecKind.LPCM) {
@@ -2592,12 +2609,21 @@ private class AudioRenderer(
         }
         statsLastUnderruns = underruns
         maxWriteMs = 0L
+        queueMinFrames = Long.MAX_VALUE
+        queueMaxFrames = 0L
+        rateChangesThisWindow = 0
         writtenFramesThisWindow = 0L
         writeErrorsThisWindow = 0
         lastWriteErrorCode = null
         zeroWritesThisWindow = 0
         partialWritesThisWindow = 0
         statsWindowStartNs = now
+    }
+
+    private fun queueFramesToMs(frames: Long): Long {
+        if (frames == Long.MAX_VALUE) return -1
+        val rate = track?.sampleRate ?: format.sampleRate
+        return if (rate > 0) frames * 1000L / rate else -1
     }
 
     private fun reportFailure(error: Throwable) {
