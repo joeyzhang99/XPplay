@@ -90,9 +90,6 @@ class LocalOnlyHotspotManager(context: Context, private val onDiagnostic: (Strin
                 deadlineNanos = deadlineNanos,
             )
             val liveRadio = awaitRadioInfo(radioInfo, apInterface, configuration, attempt, deadlineNanos)
-            if (liveRadio?.frequencyMHz?.let { it !in 5160..5895 } ?: (configuration.bandLabel != "5 GHz")) {
-                throw IOException("This firmware did not provide the requested 5 GHz local hotspot; choose Wi-Fi Direct or Car hotspot")
-            }
 
             synchronized(stateLock) {
                 ensureStartActiveLocked(attempt)
@@ -106,17 +103,30 @@ class LocalOnlyHotspotManager(context: Context, private val onDiagnostic: (Strin
             }
             radioInfo.watch(apInterface.bssid ?: configuration.bssid, onDiagnostic)
 
-            // With a live radio reading the channel is measured; Android 11/12 some cars units
-            // have neither a live callback nor working WEXT, so there the advertised
-            // channel degrades to the configuration's, the one this manager requested,
-            // or 36 — in that order — and the phone joining is the real verification.
-            val advertisedChannel = when {
-                liveRadio != null -> wifiFrequencyMhzToChannel(liveRadio.frequencyMHz)
-                    ?: configuration.channel.takeIf { it > 0 } ?: requestedChannel ?: 36
-                configuration.channel > 0 -> configuration.channel
-                requestedChannel != null -> requestedChannel
-                else -> 36
+            // A measured channel always wins. Without one (Android 9 reports apChannel=0 and many
+            // Qualcomm firmwares do not answer the WEXT query), fall back to a scan result, then to
+            // the station's channel on a single-radio 2.4 GHz unit, then to a band default. The
+            // phone joining is the real verification either way.
+            val scannedChannel = if (liveRadio == null && configuration.channel == 0 && requestedChannel == null) {
+                scannedChannelFor(configuration.ssid)
+            } else {
+                null
             }
+            val stationChannel = if (configuration.bandLabel == "2.4 GHz" &&
+                liveRadio == null && configuration.channel == 0
+            ) {
+                stationChannel2Ghz()
+            } else {
+                null
+            }
+            val advertisedChannel = LocalOnlyHotspotChannelPolicy.resolve(
+                bandLabel = configuration.bandLabel,
+                liveFrequencyMHz = liveRadio?.frequencyMHz,
+                configuredChannel = configuration.channel,
+                requestedChannel = requestedChannel,
+                scannedChannel = scannedChannel,
+                stationChannel = stationChannel,
+            )
             if (liveRadio == null && configuration.channel == 0) {
                 onDiagnostic("LocalOnlyHotspot: advertising channel $advertisedChannel (band ${configuration.bandLabel}) without live verification")
             }
@@ -239,6 +249,7 @@ class LocalOnlyHotspotManager(context: Context, private val onDiagnostic: (Strin
     ): LocalOnlyHotspotRadioInfo.Radio? {
         val legacy = LegacyHotspotRadio.Settled()
         val legacyStart = System.nanoTime()
+        var radioQueryLogged = false
         while (true) {
             ensureStartActive(attempt)
             observer.settledForBssid(ap.bssid ?: configuration.bssid)?.let { return it }
@@ -246,19 +257,31 @@ class LocalOnlyHotspotManager(context: Context, private val onDiagnostic: (Strin
                 if (configuration.channel > 0) return null
                 if (Build.VERSION.SDK_INT < 33) {
                     val reading = LegacyHotspotRadio.read(ap.name, configuration.bandLabel)
+                    if (!radioQueryLogged) {
+                        radioQueryLogged = true
+                        onDiagnostic(
+                            "LocalOnlyHotspot: AP radio query iface=${ap.name} " +
+                                "frequency=${reading.frequencyMHz ?: "unreadable"} " +
+                                "error=${reading.error ?: "none"}",
+                        )
+                    }
                     val settled = legacy.observe(reading.frequencyMHz, System.nanoTime() / 1_000_000)
                     if (settled != null) {
                         onDiagnostic("LocalOnlyHotspot legacy AP radio iface=${ap.name} frequency=${settled}MHz channel=${wifiFrequencyMhzToChannel(settled)}")
                         return LocalOnlyHotspotRadioInfo.Radio(ap.bssid ?: configuration.bssid, settled)
                     }
-                    if (System.nanoTime() - legacyStart >= TimeUnit.MILLISECONDS.toNanos(
-                            if (configuration.bandLabel == "5 GHz") 1500 else 6000
-                        )
-                    ) {
+                    val settleBudgetMillis = if (configuration.bandLabel == "5 GHz") {
+                        // Every some cars Qualcomm tested answers WEXT with errno 95 and
+                        // Android 11/12 has no live LOHS channel callback, so an
+                        // unreadable channel cannot be treated as a broken hotspot.
+                        1500
+                    } else {
+                        // The 2.4 GHz channel is usually picked from the station's channel or a
+                        // scan; do not stall the whole startup for six seconds first.
+                        2500
+                    }
+                    if (System.nanoTime() - legacyStart >= TimeUnit.MILLISECONDS.toNanos(settleBudgetMillis.toLong())) {
                         if (configuration.bandLabel == "5 GHz") {
-                            // Every some cars Qualcomm tested answers WEXT with errno 95 and
-                            // Android 11/12 has no live LOHS channel callback, so an
-                            // unreadable channel cannot be treated as a broken hotspot.
                             // The framework already confirmed the 5 GHz band, so accept
                             // the reservation; the advertised channel falls back to the
                             // requested one and the phone joining is the live check.
@@ -266,18 +289,11 @@ class LocalOnlyHotspotManager(context: Context, private val onDiagnostic: (Strin
                             return null
                         }
                         if (configuration.bandLabel == "2.4 GHz") {
-                            if (Build.VERSION.SDK_INT < 30) {
-                                // Android 10 some cars firmware pins the local hotspot to 2.4 GHz
-                                // regardless of the Wi-Fi switch (extracted-firmware fact);
-                                // switching Wi-Fi off cannot help, so do not suggest it.
-                                throw IOException("LocalOnlyHotspot: this Android 10 firmware always places the local hotspot on 2.4 GHz; use the Car hotspot or Wi-Fi Direct")
-                            }
-                            // Observed on DiLink 5.0 / Android 12: while the car's Wi-Fi
-                            // client stays associated to a 2.4 GHz network, the Qualcomm
-                            // stack pins the local hotspot onto the same channel even when
-                            // 5 GHz was explicitly requested. Name the remedy, not the
-                            // unreadable driver channel.
-                            throw IOException("LocalOnlyHotspot: this firmware placed the hotspot on 2.4 GHz while the car's Wi-Fi client was using a 2.4 GHz network; turn the car's Wi-Fi client off and try again, or choose the Car hotspot")
+                            // Android 9 XPeng G3: apChannel is 0 and the Qualcomm driver does not
+                            // answer the WEXT query. CarPlay still works at 2.4 GHz (the router mode
+                            // proves it), so advertise a best-effort channel instead of refusing.
+                            onDiagnostic("LocalOnlyHotspot: 2.4 GHz AP channel not reported (${reading.error ?: "radio did not settle"}); advertising a best-effort channel")
+                            return null
                         }
                         throw IOException("LocalOnlyHotspot: Android ${Build.VERSION.SDK_INT} cannot read the AP channel (${reading.error ?: "radio did not settle"}); choose a 5 GHz Car hotspot or Wi-Fi Direct")
                     }
@@ -551,15 +567,21 @@ class LocalOnlyHotspotManager(context: Context, private val onDiagnostic: (Strin
         attempt: StartAttempt,
         deadlineNanos: Long,
     ): ApInterface {
+        var nextCandidateLogNs = 0L
         while (true) {
             ensureStartActive(attempt)
-            val networkInterface = findInterface(bssid, previousAddresses, previousUpstreams)
+            val networkInterface = findInterface(bssid, previousAddresses)
             if (networkInterface != null) {
                 networkInterface.hotspotAddress()?.let { hostAddress ->
+                    // A soft AP interface on some Android 9 ROMs reports no hardware address; the
+                    // configured BSSID is optional, and insisting on one here waited for an
+                    // identification the framework would never provide.
                     val interfaceBssid = networkInterface.interfaceBssid()
-                    if (bssid == null && interfaceBssid == null) {
-                        return@let
-                    }
+                    onDiagnostic(
+                        "LocalOnlyHotspot: AP interface iface=${networkInterface.name} " +
+                            "host=${hostAddress.hostAddress ?: "none"} " +
+                            "macReadable=${interfaceBssid != null}",
+                    )
                     return ApInterface(
                         name = networkInterface.name,
                         hostAddress = hostAddress,
@@ -568,6 +590,10 @@ class LocalOnlyHotspotManager(context: Context, private val onDiagnostic: (Strin
                 }
             }
 
+            if (System.nanoTime() >= nextCandidateLogNs) {
+                nextCandidateLogNs = System.nanoTime() + TimeUnit.SECONDS.toNanos(2)
+                logInterfaceCandidates(previousAddresses, previousUpstreams)
+            }
             val remainingNanos = deadlineNanos - System.nanoTime()
             if (remainingNanos <= 0) {
                 throw IOException("LocalOnlyHotspot started but its AP interface/address could not be identified")
@@ -581,19 +607,71 @@ class LocalOnlyHotspotManager(context: Context, private val onDiagnostic: (Strin
         }
     }
 
+    /** Why the AP interface was not identified: names, address novelty, MAC readability, upstream. */
+    private fun logInterfaceCandidates(
+        previousAddresses: Set<String>,
+        previousUpstreams: Set<String>,
+    ) {
+        val upstream = previousUpstreams + upstreamInterfaceNames()
+        val described = activeInterfaces().take(8).joinToString(";") { net ->
+            val ipv4 = net.siteLocalIpv4Addresses()
+            val apLike = net.name.matches(Regex("(?:ap|wlan|swlan|softap|wifi)[0-9]+"))
+            "${net.name}:apLike=$apLike:ipv4=${ipv4.size}:new=${ipv4.count { it !in previousAddresses }}:" +
+                "macReadable=${net.interfaceBssid() != null}:upstream=${net.name in upstream}"
+        }
+        onDiagnostic("LocalOnlyHotspot: waiting for the AP interface; interfaces=[$described]")
+    }
+
     private fun findInterface(
         bssid: ByteArray?,
         previousAddresses: Set<String>,
-        previousUpstreams: Set<String>,
     ): NetworkInterface? {
         val interfaces = activeInterfaces()
         val candidates = interfaces.map { net ->
             LocalOnlyHotspotInterfacePolicy.Candidate(net.name, net.siteLocalIpv4Addresses(), net.interfaceBssid())
         }
+        // Only interfaces that are upstream *now* are excluded. On single-radio Android 9 the local
+        // hotspot reuses the station interface: when the station disconnects the same wlan0 becomes
+        // the AP with a fresh 192.168.43.1, and keeping its pre-start "upstream" role would hide the
+        // only valid candidate until the startup timeout.
         val selected = LocalOnlyHotspotInterfacePolicy.select(
-            candidates, previousAddresses, previousUpstreams + upstreamInterfaceNames(), bssid?.toMacAddressString(),
+            candidates, previousAddresses, upstreamInterfaceNames(), bssid?.toMacAddressString(),
         ) ?: return null
         return interfaces.singleOrNull { it.name == selected.name }
+    }
+
+    /**
+     * Finds the AP's channel in scan results when the driver does not answer WEXT. The beacon of the
+     * network we just started can be present in the cached results; otherwise ask for one scan and
+     * wait briefly. Failure is expected on some firmware and only costs the startup budget.
+     */
+    @SuppressLint("MissingPermission")
+    private fun scannedChannelFor(networkName: String): Int? {
+        fun lookup(): Int? = runCatching {
+            wifiManager.scanResults.firstOrNull { it.SSID == networkName }?.frequency
+        }.getOrNull()?.let(::wifiFrequencyMhzToChannel)
+        lookup()?.let { return it }
+        if (runCatching { wifiManager.startScan() }.isFailure) return null
+        val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(3)
+        while (System.nanoTime() < deadline) {
+            lookup()?.let { return it }
+            try {
+                TimeUnit.MILLISECONDS.sleep(150)
+            } catch (_: InterruptedException) {
+                Thread.currentThread().interrupt()
+                return null
+            }
+        }
+        return null
+    }
+
+    /** On a single-radio 2.4 GHz unit the soft AP usually shares the station's channel. */
+    @SuppressLint("MissingPermission")
+    private fun stationChannel2Ghz(): Int? {
+        val connection = runCatching { wifiManager.connectionInfo }.getOrNull() ?: return null
+        if (connection.supplicantState != android.net.wifi.SupplicantState.COMPLETED) return null
+        if (connection.frequency !in 2412..2484) return null
+        return wifiFrequencyMhzToChannel(connection.frequency)
     }
 
     private fun activeInterfaces(): List<NetworkInterface> =

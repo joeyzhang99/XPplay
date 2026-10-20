@@ -392,7 +392,7 @@
     <string name="use_a_usb_data_cable_and_the_car_s_usb_data_port_unlock_yo">Скористайтеся USB-кабелем для передавання даних і відповідним портом автомобіля. Розблокуйте iPhone та дозвольте CarPlay. Налаштовувати точку доступу не потрібно.</string>
     <string name="use_a_usb_data_cable_and_unlock_your_iphone_allow_trust_an">Скористайтеся USB-кабелем для передавання даних і розблокуйте iPhone.\nПідтвердьте довіру та CarPlay, якщо iPhone запитає.</string>
     <string name="iphone_usb_mode_rejected">iPhone не перейшов у дротовий CarPlay. Розблокуйте його та перепідключіть кабель. На iOS 15 і раніших версіях оновіть iOS або використовуйте бездротовий CarPlay.</string>
-    <string name="use_hevc_leave_off_for_the_widest_head_unit_compatibility">Використовувати HEVC. Залиште вимкненим для найширшої сумісності з головними пристроями.</string>
+    <string name="use_hevc_leave_off_for_the_widest_head_unit_compatibility">Використовувати HEVC (H.265). Головний пристрій декодує H.264 приблизно за 57 мс на кадр, через що відео періодично завмирає; залишайте HEVC увімкненим, якщо не перевіряєте сумісність.</string>
     <string name="use_software_hevc_decoder">Використовувати програмний декодер HEVC</string>
     <string name="use_usage_content_type_routing_instead_of_stream_type">Спрямовувати за призначенням і типом вмісту замість типу потоку</string>
     <string name="use_your_last_connection_type_and_selected_iphone">Використовувати останній спосіб підключення та вибраний iPhone.</string>

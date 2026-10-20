@@ -20,6 +20,6 @@ internal object WifiLinkSnapshot {
         @Suppress("DEPRECATION")
         val level = runCatching { WifiManager.calculateSignalLevel(info.rssi, 5) }.getOrDefault(-1)
         return "rssi=${info.rssi}dBm level=$level speed=${info.linkSpeed}Mbps " +
-            "freq=${info.frequency}MHz ssidReadable=${ssid != null}"
+            "freq=${info.frequency}MHz nameReadable=${ssid != null}"
     }
 }

@@ -51,6 +51,13 @@ class MediaBufferPersistenceTest {
         assertEquals(1000, AirPlayPersistence.loadMediaBufferMillis(context, wireless = true))
     }
 
+    // The G3's H.264 decoder needs ~57 ms/frame and freezes; HEVC takes ~29 ms, so it is the default.
+    @Test fun hevcIsOnByDefaultAndCanBeTurnedOff() {
+        assertEquals(true, AirPlayPersistence.loadHevcEnabled(context))
+        AirPlayPersistence.saveHevcEnabled(context, false)
+        assertEquals(false, AirPlayPersistence.loadHevcEnabled(context))
+    }
+
     @Test fun highPerformanceWifiIsOnByDefaultAndCanBeTurnedOff() {
         assertEquals(true, AirPlayPersistence.loadWifiHighPerformance(context))
         AirPlayPersistence.saveWifiHighPerformance(context, false)

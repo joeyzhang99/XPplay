@@ -381,7 +381,7 @@
     <string name="use_a_usb_data_cable_and_the_car_s_usb_data_port_unlock_yo">Usa un cable de datos USB y el puerto de datos USB del coche. Desbloquea tu iPhone y permite CarPlay. No hace falta configurar el punto de acceso.</string>
     <string name="use_a_usb_data_cable_and_unlock_your_iphone_allow_trust_an">Usa un cable de datos USB y desbloquea tu iPhone.\nPermite «Confiar» y CarPlay si tu iPhone lo pide.</string>
     <string name="iphone_usb_mode_rejected">Tu iPhone no cambió a CarPlay con cable. Desbloquéalo y vuelve a conectar el cable. Con iOS 15 o anterior, actualiza iOS o usa CarPlay inalámbrico.</string>
-    <string name="use_hevc_leave_off_for_the_widest_head_unit_compatibility">Usa HEVC. Desactívalo para la máxima compatibilidad con unidades principales.</string>
+    <string name="use_hevc_leave_off_for_the_widest_head_unit_compatibility">Usa HEVC (H.265). Esta unidad decodifica H.264 en unos 57 ms por fotograma, lo que congela la imagen periódicamente; mantén HEVC activado salvo que estés comprobando compatibilidad.</string>
     <string name="use_software_hevc_decoder">Usar decodificador por software HEVC</string>
     <string name="use_usage_content_type_routing_instead_of_stream_type">Usar enrutamiento por uso/tipo de contenido en lugar del tipo de flujo</string>
     <string name="use_your_last_connection_type_and_selected_iphone">Usa tu último tipo de conexión y el iPhone seleccionado.</string>

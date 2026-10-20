@@ -393,7 +393,7 @@
     <string name="use_a_usb_data_cable_and_the_car_s_usb_data_port_unlock_yo">使用 USB 数据线连接车机的 USB 数据接口。解锁 iPhone 并允许 CarPlay。无需设置热点。</string>
     <string name="use_a_usb_data_cable_and_unlock_your_iphone_allow_trust_an">请使用 USB 数据线并解锁 iPhone。\niPhone 出现提示时允许“信任”和使用 CarPlay。</string>
     <string name="iphone_usb_mode_rejected">iPhone 未切换到有线 CarPlay。请解锁 iPhone 并重新插拔数据线。iOS 15 及更早版本请升级 iOS 或使用无线 CarPlay。</string>
-    <string name="use_hevc_leave_off_for_the_widest_head_unit_compatibility">使用 HEVC。关闭后可兼容更多车机。</string>
+    <string name="use_hevc_leave_off_for_the_widest_head_unit_compatibility">使用 HEVC（H.265）。本车机 H.264 解码约 57 毫秒/帧，会导致画面周期性冻结；除非排查兼容性，建议保持开启。</string>
     <string name="use_software_hevc_decoder">使用 HEVC 软件解码器</string>
     <string name="use_usage_content_type_routing_instead_of_stream_type">使用 usage / content-type 路由代替流类型</string>
     <string name="use_your_last_connection_type_and_selected_iphone">使用上次的连接方式和已选 iPhone。</string>

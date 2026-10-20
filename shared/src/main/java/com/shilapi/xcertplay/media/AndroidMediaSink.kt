@@ -2524,8 +2524,11 @@ private class AudioRenderer(
     private fun maintainPlaybackBuffer() {
         val track = track ?: return
         val queuedBytes = bufferProgress.queuedBytes(track.playbackHeadPosition)
-        if (queuedBytes < queueMinFrames) queueMinFrames = queuedBytes
-        if (queuedBytes > queueMaxFrames) queueMaxFrames = queuedBytes
+        // The statistics report frames and milliseconds; keeping bytes here inflated the queue
+        // extremes by the frame size (16-bit stereo = 4 bytes/frame).
+        val queuedFrames = if (frameBytes > 0) queuedBytes.toLong() / frameBytes else 0L
+        if (queuedFrames < queueMinFrames) queueMinFrames = queuedFrames
+        if (queuedFrames > queueMaxFrames) queueMaxFrames = queuedFrames
         if (bufferProgress.shouldRebuffer(mappedChannel == AudioChannel.MEDIA, playbackStarted,
                 track.underrunCount > underrunsAtPlaybackStart, queue.isEmpty(), track.playbackHeadPosition,
                 startThresholdBytes / 2L)) {
