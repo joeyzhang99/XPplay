@@ -973,4 +973,7 @@
     <string name="settings_wifi_high_performance">Wi-Fi 高性能モード（実験）</string>
     <string name="settings_wifi_high_performance_description">ワイヤレス接続中に Wi-Fi の省電力を無効にします。リンクによる映像・音楽の途切れが減る可能性があります。消費電力は増えます。</string>
     <string name="wired_carplay_unavailable_using_wireless">このヘッドユニットでは有線 CarPlay を開始できません（VPN 同意画面がありません）。Wi-Fi 接続を続けます。</string>
+    <string name="settings_local_only_hotspot">ローカルホットスポット（実験）</string>
+    <string name="settings_local_only_hotspot_description">XPplay が自分でホットスポットを作るため、ヘッドユニットにホットスポット機能は不要です。iPhone が直接接続するのでルーターを経由せず、実行中は Wi-Fi スキャンによる途切れもありません。有効にすると車機の既存 Wi-Fi 接続は切れます。</string>
+    <string name="settings_local_only_hotspot_hint">このホットスポットは XPplay が作成・終了し、iPhone は自動で参加します。失敗したら別のモードに戻してください。</string>
 </resources>

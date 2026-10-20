@@ -932,4 +932,7 @@
     <string name="settings_wifi_high_performance">Wi-Fi 高效能模式（實驗）</string>
     <string name="settings_wifi_high_performance_description">無線連線期間讓 Wi-Fi 不進入省電。可能減少鏈路造成的影片和音樂卡頓；會增加耗電。</string>
     <string name="wired_carplay_unavailable_using_wireless">此車機無法啟動有線 CarPlay（沒有 VPN 授權畫面），已繼續使用無線連線。</string>
+    <string name="settings_local_only_hotspot">本地熱點（實驗）</string>
+    <string name="settings_local_only_hotspot_description">由 XPplay 自行建立熱點，車機不需要有熱點功能；iPhone 直連，沒有路由器中轉，連線期間也不會因車機掃描 Wi-Fi 而卡頓。啟用時車機會中斷原本的 Wi-Fi。</string>
+    <string name="settings_local_only_hotspot_hint">本地熱點由 XPplay 建立與關閉，iPhone 會自動加入；若連線失敗，請切回其他模式。</string>
 </resources>

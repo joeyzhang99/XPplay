@@ -866,4 +866,7 @@
     <string name="settings_wifi_high_performance">Высокопроизводительный Wi-Fi (эксперимент)</string>
     <string name="settings_wifi_high_performance_description">Не даёт Wi-Fi переходить в режим энергосбережения при беспроводном подключении. Может уменьшить зависания видео и музыки из-за канала; расходует больше энергии.</string>
     <string name="wired_carplay_unavailable_using_wireless">Проводной CarPlay не запускается на этом ГУ (нет экрана согласия VPN). Продолжаем по Wi-Fi.</string>
+    <string name="settings_local_only_hotspot">Локальная точка доступа (эксперимент)</string>
+    <string name="settings_local_only_hotspot_description">XPplay сам создаёт точку доступа, поэтому встроенная точка доступа ГУ не нужна. iPhone подключается напрямую: без роутера посередине и без сканирования Wi-Fi во время сеанса. Текущее Wi-Fi-подключение ГУ при этом отключается.</string>
+    <string name="settings_local_only_hotspot_hint">XPplay создаёт и закрывает эту точку доступа, iPhone подключается автоматически. Если не получится, вернитесь к другому режиму.</string>
 </resources>

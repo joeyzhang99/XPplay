@@ -914,4 +914,7 @@
     <string name="settings_wifi_high_performance">Wi-Fi عالي الأداء (تجريبي)</string>
     <string name="settings_wifi_high_performance_description">يمنع Wi-Fi من الدخول في وضع توفير الطاقة أثناء الاتصال اللاسلكي. قد يقلل تقطّع الفيديو والموسيقى بسبب الرابط؛ يستهلك طاقة أكبر.</string>
     <string name="wired_carplay_unavailable_using_wireless">لا يمكن بدء CarPlay السلكي على هذه الوحدة (لا توجد شاشة موافقة VPN). نتابع عبر Wi-Fi.</string>
+    <string name="settings_local_only_hotspot">نقطة اتصال محلية (تجريبي)</string>
+    <string name="settings_local_only_hotspot_description">ينشئ XPplay نقطة الاتصال بنفسه، لذا لا تحتاج الوحدة إلى ميزة نقطة الاتصال. يتصل iPhone مباشرة: بدون راوتر وسيط ودون فحص Wi-Fi أثناء التشغيل. ينقطع اتصال Wi-Fi الحالي للوحدة أثناء ذلك.</string>
+    <string name="settings_local_only_hotspot_hint">ينشئ XPplay نقطة الاتصال هذه ويغلقها، وينضم iPhone تلقائيًا. إذا فشل، فارجع إلى وضع آخر.</string>
 </resources>

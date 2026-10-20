@@ -7,6 +7,7 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.view.View
 import android.view.ViewGroup
+import com.shilapi.xcertplay.host.R
 import com.shilapi.xcertplay.network.CarHotspotSettings
 import com.shilapi.xcertplay.orchestration.CarPlayRuntimeConfig
 import com.shilapi.xcertplay.orchestration.CarPlayTransport
@@ -91,6 +92,16 @@ class ExistingWifiSettingsTest {
         AirPlayPersistence.saveWirelessEnabled(app, false)
         CarPlayHostActivity::class.java.getDeclaredMethod("loadPersistedSettings").apply { isAccessible = true }.invoke(host)
         assertEquals(CarPlayTransport.WIRED, runtime().transport)
+    }
+
+    // Cars without a hotspot feature get a direct link anyway: Android creates the access point.
+    @Test fun localHotspotModeIsOfferedAndSaved() {
+        AirPlayPersistence.saveWirelessHotspotMode(app, WirelessHotspotMode.WIFI_P2P)
+        val button = controls().filterIsInstance<Button>()
+            .first { it.text.contains(app.getString(R.string.settings_local_only_hotspot)) }
+        button.performClick()
+        shadowOf(Looper.getMainLooper()).idle()
+        assertEquals(WirelessHotspotMode.LOCAL_ONLY_HOTSPOT, AirPlayPersistence.loadWirelessHotspotMode(app))
     }
 
     private fun controls(): List<View> {

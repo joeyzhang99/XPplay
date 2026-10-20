@@ -866,4 +866,7 @@
     <string name="settings_wifi_high_performance">Wi-Fi de alto rendimiento (experimental)</string>
     <string name="settings_wifi_high_performance_description">Evita que el Wi-Fi entre en ahorro de energía durante la conexión inalámbrica. Puede reducir los cortes de vídeo y música causados por el enlace; consume más energía.</string>
     <string name="wired_carplay_unavailable_using_wireless">CarPlay por cable no puede iniciarse en esta unidad (no tiene pantalla de consentimiento de VPN). Continuamos por Wi-Fi.</string>
+    <string name="settings_local_only_hotspot">Punto de acceso local (experimental)</string>
+    <string name="settings_local_only_hotspot_description">XPplay crea el punto de acceso, así que la unidad no necesita esa función. El iPhone se conecta directamente: sin router intermedio y sin escaneos de Wi-Fi durante la sesión. La conexión Wi-Fi actual de la unidad se pierde mientras está activo.</string>
+    <string name="settings_local_only_hotspot_hint">XPplay crea y cierra este punto de acceso; el iPhone se une automáticamente. Si falla, vuelve a otro modo.</string>
 </resources>

@@ -974,4 +974,7 @@
     <string name="settings_wifi_high_performance">High-performance Wi-Fi (experimental)</string>
     <string name="settings_wifi_high_performance_description">Keeps the Wi-Fi radio out of power saving while connected wirelessly. May reduce the video and music stalls the link causes; uses more power.</string>
     <string name="wired_carplay_unavailable_using_wireless">Wired CarPlay cannot start on this head unit (it has no VPN consent screen). Continuing over Wi-Fi.</string>
+    <string name="settings_local_only_hotspot">Local hotspot (experimental)</string>
+    <string name="settings_local_only_hotspot_description">XPplay creates the hotspot itself, so the car needs no hotspot feature. The iPhone joins it directly: no router in between and no Wi-Fi scanning while it runs. The car’s own Wi-Fi connection is dropped while it runs.</string>
+    <string name="settings_local_only_hotspot_hint">XPplay creates and closes this hotspot; the iPhone joins automatically. If it fails, switch back to another mode.</string>
 </resources>

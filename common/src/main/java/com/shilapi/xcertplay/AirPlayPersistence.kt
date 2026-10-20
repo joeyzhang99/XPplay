@@ -432,17 +432,29 @@ object AirPlayPersistence {
         val stored = prefs.getString(KEY_WIRELESS_HOTSPOT_MODE, null)
         val mode = WirelessHotspotMode.entries.firstOrNull { it.name == stored }
             ?: WirelessHotspotMode.MANUAL
-        val supported = if (mode == WirelessHotspotMode.LOCAL_ONLY_HOTSPOT) WirelessHotspotMode.MANUAL else mode
+        val supported = sanitizeWirelessHotspotMode(mode)
         if (stored != supported.name) saveWirelessHotspotMode(context, supported)
         return supported
     }
 
     fun saveWirelessHotspotMode(context: Context, mode: WirelessHotspotMode) {
-        val supported = if (mode == WirelessHotspotMode.LOCAL_ONLY_HOTSPOT) WirelessHotspotMode.MANUAL else mode
+        val supported = sanitizeWirelessHotspotMode(mode)
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
             .putString(KEY_WIRELESS_HOTSPOT_MODE, supported.name)
             .apply()
     }
+
+    /**
+     * The local-only hotspot API exists from Android 8; older releases migrate to the built-in car
+     * hotspot, whose details were already saved. Kept out of the UI until V1.4.8 because cars with a
+     * usable built-in hotspot should use it; without one it is the only hotspot-based direct link.
+     */
+    fun sanitizeWirelessHotspotMode(mode: WirelessHotspotMode): WirelessHotspotMode =
+        if (mode == WirelessHotspotMode.LOCAL_ONLY_HOTSPOT && Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            WirelessHotspotMode.MANUAL
+        } else {
+            mode
+        }
 
     fun loadWifiP2pPreferredChannel(context: Context): Int = runCatching {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
