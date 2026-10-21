@@ -430,8 +430,10 @@ object AirPlayPersistence {
     fun loadWirelessHotspotMode(context: Context): WirelessHotspotMode {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val stored = prefs.getString(KEY_WIRELESS_HOTSPOT_MODE, null)
+        // This build targets the XPeng G3, which has no built-in car hotspot: the same-LAN router
+        // mode is the recommended daily connection, so a fresh install starts there.
         val mode = WirelessHotspotMode.entries.firstOrNull { it.name == stored }
-            ?: WirelessHotspotMode.MANUAL
+            ?: WirelessHotspotMode.EXISTING_WIFI
         val supported = sanitizeWirelessHotspotMode(mode)
         if (stored != supported.name) saveWirelessHotspotMode(context, supported)
         return supported

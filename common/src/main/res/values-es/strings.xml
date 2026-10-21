@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="existing_wifi_title">Wi-Fi existente / Misma LAN</string>
-    <string name="existing_wifi_description">Usa un router o Wi-Fi portátil existente. Mantén el iPhone y el coche en la misma red con acceso a Internet.</string>
+    <string name="existing_wifi_description">Recomendado (uso diario): usa un router o Wi-Fi portátil existente. Mantén el iPhone y el coche en la misma red con Internet; las apps del coche usarán esa red en lugar de los datos móviles del vehículo.</string>
     <string name="existing_wifi_hint">Wi-Fi existente · Mantén ambos dispositivos en la misma Wi-Fi y el Bluetooth activado. No necesitas el punto de acceso del coche.</string>
     <string name="existing_wifi_instructions">Conecta el coche y el iPhone a la misma Wi-Fi externa en los ajustes del sistema. Introduce su nombre exacto y contraseña WPA2; deja la contraseña vacía solo para una red abierta. Usa WPA2 o el modo mixto WPA2/WPA3 y desactiva el aislamiento de clientes del router. XPplay mantiene esta conexión y no crea un punto de acceso.</string>
     <string name="existing_wifi_details">Datos de Wi-Fi externa</string>
@@ -866,7 +866,9 @@
     <string name="settings_wifi_high_performance">Wi-Fi de alto rendimiento (experimental)</string>
     <string name="settings_wifi_high_performance_description">Evita que el Wi-Fi entre en ahorro de energía durante la conexión inalámbrica. Puede reducir los cortes de vídeo y música causados por el enlace; consume más energía.</string>
     <string name="wired_carplay_unavailable_using_wireless">CarPlay por cable no puede iniciarse en esta unidad (no tiene pantalla de consentimiento de VPN). Continuamos por Wi-Fi.</string>
-    <string name="settings_local_only_hotspot">Punto de acceso local (experimental)</string>
-    <string name="settings_local_only_hotspot_description">XPplay crea el punto de acceso, así que la unidad no necesita esa función. El iPhone se conecta directamente: sin router intermedio y sin escaneos de Wi-Fi durante la sesión. La conexión Wi-Fi actual de la unidad se pierde mientras está activo.</string>
-    <string name="settings_local_only_hotspot_hint">XPplay crea y cierra este punto de acceso; el iPhone se une automáticamente. Si falla, vuelve a otro modo.</string>
+    <string name="settings_local_only_hotspot">Punto de acceso local (experimental, alternativa)</string>
+    <string name="settings_local_only_hotspot_description">Alternativa: XPplay crea el punto de acceso y el iPhone se conecta directamente, sin router. Nota: no comparte Internet, las apps del coche usarán los datos móviles del vehículo y la primera conexión requiere confirmación en el iPhone. Para el día a día, prefiere «Wi-Fi existente / misma red».</string>
+    <string name="settings_local_only_hotspot_hint">XPplay crea y cierra este punto de acceso; el iPhone se une automáticamente. La primera vez, toca «Unirse» si el iPhone lo pregunta. Para el día a día se recomienda «Wi-Fi existente».</string>
+    <string name="waiting_for_paired_iphone_local_hotspot">Esperando a que el iPhone se una al punto de acceso local (la primera vez, toca «Unirse» cuando el iPhone lo pregunte)</string>
+    <string name="connection_help_local_hotspot">El punto de acceso local se creó, pero el iPhone no se unió. Mantén el iPhone desbloqueado y con Bluetooth activo; la primera vez el iPhone pregunta si unirse a la red AndroidShare: toca «Unirse». Si sigue fallando, cambia a «Wi-Fi existente / misma red» (más estable).</string>
 </resources>

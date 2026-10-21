@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import com.shilapi.xcertplay.host.R
+import com.shilapi.xcertplay.orchestration.WirelessHotspotMode
 import java.util.Locale
 import org.junit.After
 import org.junit.Assert.assertFalse
@@ -28,6 +29,9 @@ class CarHotspotNameTextTest {
 
     @Before fun setUp() {
         clearSettings()
+        // These cases describe the built-in car-hotspot mode, which is no longer the fresh-install
+        // default (the G3 has no car hotspot and starts on Existing Wi-Fi).
+        AirPlayPersistence.saveWirelessHotspotMode(context, WirelessHotspotMode.MANUAL)
         // The car hotspot is off, as on a head unit that has just been switched on.
         context.sendStickyBroadcast(Intent("android.net.wifi.WIFI_AP_STATE_CHANGED")
             .putExtra("wifi_state", 11).putExtra("wifi_ap_mode", 1))

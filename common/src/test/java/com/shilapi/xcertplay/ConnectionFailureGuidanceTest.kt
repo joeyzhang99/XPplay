@@ -44,10 +44,15 @@ class ConnectionFailureGuidanceTest {
 
     @Test fun onlyTheCarHotspotAsksTheDriverToJoinANetworkOnTheIphone() {
         for (mode in listOf(WirelessHotspotMode.WIFI_P2P, WirelessHotspotMode.LOCAL_ONLY_HOTSPOT)) {
-            assertEquals(R.string.connection_help_wifi_direct,
+            val expected = if (mode == WirelessHotspotMode.LOCAL_ONLY_HOTSPOT) {
+                R.string.connection_help_local_hotspot
+            } else {
+                R.string.connection_help_wifi_direct
+            }
+            assertEquals(expected,
                 guide("unknown", startup = WirelessStartupFailure.FIRST_TCP_TIMEOUT, mode = mode))
-            assertEquals(R.string.connection_help_wifi_direct, guide("createGroup failed", mode = mode))
-            assertEquals(R.string.connection_help_wifi_direct, guide("AirPlay TCP timeout", mode = mode))
+            assertEquals(expected, guide("createGroup failed", mode = mode))
+            assertEquals(expected, guide("AirPlay TCP timeout", mode = mode))
         }
         assertEquals(R.string.connection_help_existing_wifi,
             guide("unknown", startup = WirelessStartupFailure.FIRST_TCP_TIMEOUT, mode = WirelessHotspotMode.EXISTING_WIFI))

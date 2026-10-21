@@ -935,8 +935,14 @@ class CarPlayController(
             }
 
             val listenerIdentity = AirPlayListenerIdentity(generation)
+            val firstTcpMillis = if (config.wirelessHotspotMode == WirelessHotspotMode.LOCAL_ONLY_HOTSPOT) {
+                WirelessStartupPolicy.LOCAL_ONLY_HOTSPOT_FIRST_TCP_MILLIS
+            } else {
+                WirelessStartupPolicy.FIRST_TCP_MILLIS
+            }
             val watchdog = FirstTcpWatchdog(
                 listener = listenerIdentity,
+                timeoutMillis = firstTcpMillis,
                 schedule = { delay, action ->
                     val future = startupTimer.schedule({ action() }, delay, TimeUnit.MILLISECONDS)
                     val cancel: () -> Unit = { future.cancel(false); Unit }

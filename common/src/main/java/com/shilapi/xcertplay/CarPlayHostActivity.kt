@@ -6069,7 +6069,12 @@ class CarPlayHostActivity : ComponentActivity() {
             if (wirelessHotspotMode == WirelessHotspotMode.EXISTING_WIFI) {
                 res.getString(R.string.existing_wifi_ready, ssid, band, channel, address)
             } else res.getString(R.string.status_hotspot_ready, backend, ssid, band, if (channel == 0) res.getString(R.string.auto_value) else channel.toString())
-        CarPlayStatus.WaitingForPairedIphone -> res.getString(R.string.waiting_for_paired_iphone)
+        CarPlayStatus.WaitingForPairedIphone ->
+            if (wirelessHotspotMode == WirelessHotspotMode.LOCAL_ONLY_HOTSPOT) {
+                res.getString(R.string.waiting_for_paired_iphone_local_hotspot)
+            } else {
+                res.getString(R.string.waiting_for_paired_iphone)
+            }
         CarPlayStatus.ConnectingBluetooth -> res.getString(R.string.connecting_bluetooth)
         CarPlayStatus.RunningWireless -> res.getString(R.string.wireless_carplay_control_running)
         CarPlayStatus.WirelessActive, CarPlayStatus.WirelessActiveFallback -> res.getString(R.string.wireless_carplay_active)

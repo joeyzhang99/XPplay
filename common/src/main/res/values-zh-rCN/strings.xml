@@ -1,6 +1,6 @@
 <resources>
     <string name="existing_wifi_title">现有 Wi-Fi / 同一局域网</string>
-    <string name="existing_wifi_description">使用已有路由器或随身 Wi-Fi。让 iPhone 和车机保持连接同一网络，并通过它上网。</string>
+    <string name="existing_wifi_description">推荐（日常主用）：使用已有路由器或随身 Wi-Fi，让 iPhone 和车机连接同一网络并上网；车机自带应用会走这个网络，不消耗车机移动流量。</string>
     <string name="existing_wifi_hint">现有 Wi-Fi · 两台设备保持连接同一 Wi-Fi，蓝牙保持开启，无需开启车机热点。</string>
     <string name="existing_wifi_instructions">先在系统设置中将车机和 iPhone 连接同一外部 Wi-Fi，再准确填写它的名称和 WPA2 密码；仅开放网络可留空密码。路由器使用 WPA2 或 WPA2/WPA3 混合模式，并关闭客户端隔离。XPplay 保持此 Wi-Fi 连接，不创建热点。</string>
     <string name="existing_wifi_details">外部 Wi-Fi 详情</string>
@@ -932,7 +932,9 @@
     <string name="settings_wifi_high_performance">Wi-Fi 高性能模式（实验）</string>
     <string name="settings_wifi_high_performance_description">无线连接期间让 Wi-Fi 不进入省电。可能减少链路造成的视频和音乐卡顿；会增加耗电。</string>
     <string name="wired_carplay_unavailable_using_wireless">此车机无法启动有线 CarPlay（没有 VPN 授权界面），已继续使用无线连接。</string>
-    <string name="settings_local_only_hotspot">本地热点（实验）</string>
-    <string name="settings_local_only_hotspot_description">由 XPplay 自己创建热点，车机不需要有热点功能；iPhone 直连，没有路由器中转，连接期间也不会因车机扫描 Wi-Fi 而卡顿。启用时车机会断开原来的 Wi-Fi。</string>
-    <string name="settings_local_only_hotspot_hint">本地热点由 XPplay 创建和关闭，iPhone 会自动加入；若连接失败，请切回其他模式。</string>
+    <string name="settings_local_only_hotspot">本地热点（实验，备选）</string>
+    <string name="settings_local_only_hotspot_description">备选方案：由 XPplay 创建热点，iPhone 直连、无需路由器。注意：该热点不共享互联网，车机自带应用会改用车的移动数据流量；首次连接需要你在 iPhone 上确认加入。日常建议优先使用“现有 Wi-Fi / 同一局域网”。</string>
+    <string name="settings_local_only_hotspot_hint">本地热点由 XPplay 创建和关闭，iPhone 会自动加入；首次连接时若 iPhone 弹出加入 AndroidShare 网络的提示，请点“加入”。日常更推荐“现有 Wi-Fi”。</string>
+    <string name="waiting_for_paired_iphone_local_hotspot">等待 iPhone 加入本地热点（首次连接时，请在 iPhone 弹出提示后点“加入”）</string>
+    <string name="connection_help_local_hotspot">本地热点已创建，但 iPhone 没有加入。请保持 iPhone 解锁、蓝牙开启；首次连接时 iPhone 会弹出“加入 AndroidShare 无线局域网”，请点“加入”。仍失败时建议改用“现有 Wi-Fi / 同一局域网”模式（更稳定）。</string>
 </resources>

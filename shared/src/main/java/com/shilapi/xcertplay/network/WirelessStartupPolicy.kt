@@ -7,6 +7,8 @@ object WirelessStartupPolicy {
     const val INTERFACE_POLL_MILLIS = 250L
     const val STABLE_SAMPLES = 3
     const val FIRST_TCP_MILLIS = 30_000L
+    /** A first local-hotspot session needs the iPhone's "Join" confirmation, so allow more time. */
+    const val LOCAL_ONLY_HOTSPOT_FIRST_TCP_MILLIS = 60_000L
     const val MAX_STARTUP_RETRIES = 5
     const val STABLE_SESSION_MILLIS = 60_000L
 }

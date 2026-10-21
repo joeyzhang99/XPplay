@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="existing_wifi_title">شبكة Wi-Fi موجودة / نفس الشبكة المحلية</string>
-    <string name="existing_wifi_description">استخدم جهاز توجيه أو Wi-Fi محمولاً موجوداً. أبقِ iPhone والسيارة على الشبكة نفسها مع اتصال بالإنترنت.</string>
+    <string name="existing_wifi_description">موصى به (الاستخدام اليومي): استخدم راوترًا أو Wi-Fi محمولًا موجودًا. أبقِ iPhone والسيارة على نفس الشبكة مع إنترنت؛ ستستخدم تطبيقات السيارة هذه الشبكة بدلًا من بيانات الجوال الخاصة بالسيارة.</string>
     <string name="existing_wifi_hint">Wi-Fi موجودة · أبقِ الجهازين على شبكة Wi-Fi نفسها والبلوتوث قيد التشغيل. لا تحتاج إلى نقطة اتصال السيارة.</string>
     <string name="existing_wifi_instructions">وصّل السيارة وiPhone بشبكة Wi-Fi خارجية واحدة في إعدادات النظام. أدخل اسمها الدقيق وكلمة مرور WPA2؛ اترك كلمة المرور فارغة للشبكة المفتوحة فقط. استخدم WPA2 أو الوضع المختلط WPA2/WPA3 وأوقف عزل الأجهزة في جهاز التوجيه. يحتفظ XPplay بهذا الاتصال ولا ينشئ نقطة اتصال.</string>
     <string name="existing_wifi_details">بيانات شبكة Wi-Fi الخارجية</string>
@@ -914,7 +914,9 @@
     <string name="settings_wifi_high_performance">Wi-Fi عالي الأداء (تجريبي)</string>
     <string name="settings_wifi_high_performance_description">يمنع Wi-Fi من الدخول في وضع توفير الطاقة أثناء الاتصال اللاسلكي. قد يقلل تقطّع الفيديو والموسيقى بسبب الرابط؛ يستهلك طاقة أكبر.</string>
     <string name="wired_carplay_unavailable_using_wireless">لا يمكن بدء CarPlay السلكي على هذه الوحدة (لا توجد شاشة موافقة VPN). نتابع عبر Wi-Fi.</string>
-    <string name="settings_local_only_hotspot">نقطة اتصال محلية (تجريبي)</string>
-    <string name="settings_local_only_hotspot_description">ينشئ XPplay نقطة الاتصال بنفسه، لذا لا تحتاج الوحدة إلى ميزة نقطة الاتصال. يتصل iPhone مباشرة: بدون راوتر وسيط ودون فحص Wi-Fi أثناء التشغيل. ينقطع اتصال Wi-Fi الحالي للوحدة أثناء ذلك.</string>
-    <string name="settings_local_only_hotspot_hint">ينشئ XPplay نقطة الاتصال هذه ويغلقها، وينضم iPhone تلقائيًا. إذا فشل، فارجع إلى وضع آخر.</string>
+    <string name="settings_local_only_hotspot">نقطة اتصال محلية (تجريبية، احتياطية)</string>
+    <string name="settings_local_only_hotspot_description">خيار احتياطي: ينشئ XPplay نقطة الاتصال ويتصل iPhone مباشرة دون راوتر. ملاحظة: لا تتم مشاركة الإنترنت، لذا تستخدم تطبيقات السيارة بيانات الجوال الخاصة بالسيارة، ويحتاج الاتصال الأول إلى تأكيد على iPhone. للاستخدام اليومي يُفضّل «Wi-Fi الحالي / نفس الشبكة».</string>
+    <string name="settings_local_only_hotspot_hint">ينشئ XPplay نقطة الاتصال ويغلقها، وينضم iPhone تلقائيًا. في المرة الأولى اضغط «انضمام» إذا ظهر الطلب على iPhone. للاستخدام اليومي يُفضّل «Wi-Fi الحالي».</string>
+    <string name="waiting_for_paired_iphone_local_hotspot">في انتظار انضمام iPhone إلى نقطة الاتصال المحلية (في المرة الأولى اضغط «انضمام» عند ظهور الطلب على iPhone)</string>
+    <string name="connection_help_local_hotspot">تم إنشاء نقطة الاتصال المحلية لكن iPhone لم ينضم. أبقِ iPhone مفتوحًا وBluetooth مفعّلًا؛ في المرة الأولى يسأل iPhone عن الانضمام إلى شبكة AndroidShare فاضغط «انضمام». إذا استمر الفشل فبدّل إلى «Wi-Fi الحالي / نفس الشبكة» (أكثر استقرارًا).</string>
 </resources>

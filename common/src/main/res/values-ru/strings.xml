@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="existing_wifi_title">Существующая Wi-Fi / Одна LAN</string>
-    <string name="existing_wifi_description">Используйте существующий роутер или мобильную точку Wi-Fi. iPhone и автомобиль остаются в одной сети с доступом в Интернет.</string>
+    <string name="existing_wifi_description">Рекомендуется (основной режим): используйте существующий роутер или портативный Wi-Fi. Держите iPhone и автомобиль в одной сети с интернетом; приложения головного устройства используют эту сеть, а не мобильный трафик автомобиля.</string>
     <string name="existing_wifi_hint">Существующая Wi-Fi · Подключите оба устройства к одной Wi-Fi и включите Bluetooth. Точка доступа автомобиля не нужна.</string>
     <string name="existing_wifi_instructions">В системных настройках подключите автомобиль и iPhone к одной внешней Wi-Fi. Введите её точное имя и пароль WPA2; оставьте пароль пустым только для открытой сети. Используйте WPA2 или смешанный режим WPA2/WPA3 и отключите изоляцию клиентов на роутере. XPplay сохраняет это подключение и не создаёт точку доступа.</string>
     <string name="existing_wifi_details">Данные внешней Wi-Fi</string>
@@ -866,7 +866,9 @@
     <string name="settings_wifi_high_performance">Высокопроизводительный Wi-Fi (эксперимент)</string>
     <string name="settings_wifi_high_performance_description">Не даёт Wi-Fi переходить в режим энергосбережения при беспроводном подключении. Может уменьшить зависания видео и музыки из-за канала; расходует больше энергии.</string>
     <string name="wired_carplay_unavailable_using_wireless">Проводной CarPlay не запускается на этом ГУ (нет экрана согласия VPN). Продолжаем по Wi-Fi.</string>
-    <string name="settings_local_only_hotspot">Локальная точка доступа (эксперимент)</string>
-    <string name="settings_local_only_hotspot_description">XPplay сам создаёт точку доступа, поэтому встроенная точка доступа ГУ не нужна. iPhone подключается напрямую: без роутера посередине и без сканирования Wi-Fi во время сеанса. Текущее Wi-Fi-подключение ГУ при этом отключается.</string>
-    <string name="settings_local_only_hotspot_hint">XPplay создаёт и закрывает эту точку доступа, iPhone подключается автоматически. Если не получится, вернитесь к другому режиму.</string>
+    <string name="settings_local_only_hotspot">Локальная точка доступа (эксперим., резерв)</string>
+    <string name="settings_local_only_hotspot_description">Резервный вариант: XPplay создаёт точку доступа, iPhone подключается напрямую без роутера. Внимание: интернет не раздаётся, приложения головного устройства используют мобильный трафик автомобиля; при первом подключении нужно подтверждение на iPhone. Для постоянного использования лучше «Существующая Wi-Fi / та же сеть».</string>
+    <string name="settings_local_only_hotspot_hint">XPplay создаёт и закрывает точку доступа, iPhone подключается автоматически. При первом подключении нажмите «Присоединиться» в запросе iPhone. Для постоянного использования рекомендуется существующая Wi-Fi.</string>
+    <string name="waiting_for_paired_iphone_local_hotspot">Ожидание подключения iPhone к локальной точке доступа (в первый раз нажмите «Присоединиться» в запросе на iPhone)</string>
+    <string name="connection_help_local_hotspot">Локальная точка доступа создана, но iPhone не подключился. Убедитесь, что iPhone разблокирован и Bluetooth включён; при первом подключении iPhone запрашивает присоединение к сети AndroidShare — нажмите «Присоединиться». Если не помогает, переключитесь на «Существующая Wi-Fi / та же сеть» (стабильнее).</string>
 </resources>

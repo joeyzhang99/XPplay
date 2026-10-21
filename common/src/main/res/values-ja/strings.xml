@@ -8,7 +8,7 @@
     <string name="language_apply">適用</string>
     <string name="common_cancel">キャンセル</string>
     <string name="existing_wifi_title">既存のWi-Fi／同一LAN</string>
-    <string name="existing_wifi_description">既存のルーターやモバイルWi-Fiを使用します。iPhoneと車載端末を、インターネットに接続できる同じネットワークにつないでください。</string>
+    <string name="existing_wifi_description">推奨（通常使用）：既存のルーターまたはポータブル Wi-Fi を使い、iPhone と車機を同じネットワークに接続します。車載アプリはこのネットワークを使うため、車のモバイル通信を消費しません。</string>
     <string name="existing_wifi_hint">既存のWi-Fi · 両端末を同じWi-Fiに接続し、Bluetoothもオンにしてください。車のホットスポットは不要です。</string>
     <string name="existing_wifi_instructions">車載端末とiPhoneをシステム設定で同じWi-Fiに接続してください。下に正確なネットワーク名とWPA2パスワードを入力します。パスワードを空にできるのはオープンネットワークだけです。ルーターはWPA2またはWPA2/WPA3混在モードを使用し、クライアント分離を無効にしてください。XPplayは既存のWi-Fiを使い、ホットスポットを作成しません。</string>
     <string name="existing_wifi_details">外部Wi-Fiの情報</string>
@@ -973,7 +973,9 @@
     <string name="settings_wifi_high_performance">Wi-Fi 高性能モード（実験）</string>
     <string name="settings_wifi_high_performance_description">ワイヤレス接続中に Wi-Fi の省電力を無効にします。リンクによる映像・音楽の途切れが減る可能性があります。消費電力は増えます。</string>
     <string name="wired_carplay_unavailable_using_wireless">このヘッドユニットでは有線 CarPlay を開始できません（VPN 同意画面がありません）。Wi-Fi 接続を続けます。</string>
-    <string name="settings_local_only_hotspot">ローカルホットスポット（実験）</string>
-    <string name="settings_local_only_hotspot_description">XPplay が自分でホットスポットを作るため、ヘッドユニットにホットスポット機能は不要です。iPhone が直接接続するのでルーターを経由せず、実行中は Wi-Fi スキャンによる途切れもありません。有効にすると車機の既存 Wi-Fi 接続は切れます。</string>
-    <string name="settings_local_only_hotspot_hint">このホットスポットは XPplay が作成・終了し、iPhone は自動で参加します。失敗したら別のモードに戻してください。</string>
+    <string name="settings_local_only_hotspot">ローカルホットスポット（実験・予備）</string>
+    <string name="settings_local_only_hotspot_description">予備オプション：XPplay がホットスポットを作成し、iPhone が直接接続します（ルーター不要）。注意：インターネット共有は行わないため、車載アプリは車のモバイル通信を使用します。初回は iPhone での確認が必要です。通常は「既存 Wi-Fi / 同一 LAN」を推奨します。</string>
+    <string name="settings_local_only_hotspot_hint">このホットスポットは XPplay が作成・終了し、iPhone が自動参加します。初回に iPhone の確認が表示されたら「参加」をタップしてください。通常は既存 Wi-Fi を推奨します。</string>
+    <string name="waiting_for_paired_iphone_local_hotspot">iPhone のローカルホットスポット参加を待っています（初回は iPhone の確認ダイアログで「参加」をタップしてください）</string>
+    <string name="connection_help_local_hotspot">ローカルホットスポットは作成されましたが、iPhone が参加しませんでした。iPhone のロック解除と Bluetooth を確認してください。初回は iPhone に「AndroidShare ネットワークに参加しますか」と表示されるので「参加」をタップしてください。解決しない場合は「既存 Wi-Fi / 同一 LAN」に切り替えてください（より安定します）。</string>
 </resources>

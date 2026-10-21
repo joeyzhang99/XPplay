@@ -1,6 +1,6 @@
 <resources>
     <string name="existing_wifi_title">Existing Wi-Fi / Same LAN</string>
-    <string name="existing_wifi_description">Use an existing router or portable Wi-Fi. Keep the iPhone and car on the same network with Internet access.</string>
+    <string name="existing_wifi_description">Recommended (daily driver): use an existing router or portable Wi-Fi. Keep the iPhone and the car on the same network with Internet access; the car’s own apps then use that network instead of the car’s mobile data.</string>
     <string name="existing_wifi_hint">Existing Wi-Fi · Keep both devices on the same Wi-Fi and Bluetooth on. No car hotspot is needed.</string>
     <string name="existing_wifi_instructions">Connect the car and iPhone to the same external Wi-Fi in system settings. Enter its exact name and WPA2 password below; leave the password empty only for an open network. Use WPA2 or WPA2/WPA3 mixed mode and disable client isolation on the router. XPplay keeps this Wi-Fi connection and creates no hotspot.</string>
     <string name="existing_wifi_details">External Wi-Fi details</string>
@@ -974,7 +974,9 @@
     <string name="settings_wifi_high_performance">High-performance Wi-Fi (experimental)</string>
     <string name="settings_wifi_high_performance_description">Keeps the Wi-Fi radio out of power saving while connected wirelessly. May reduce the video and music stalls the link causes; uses more power.</string>
     <string name="wired_carplay_unavailable_using_wireless">Wired CarPlay cannot start on this head unit (it has no VPN consent screen). Continuing over Wi-Fi.</string>
-    <string name="settings_local_only_hotspot">Local hotspot (experimental)</string>
-    <string name="settings_local_only_hotspot_description">XPplay creates the hotspot itself, so the car needs no hotspot feature. The iPhone joins it directly: no router in between and no Wi-Fi scanning while it runs. The car’s own Wi-Fi connection is dropped while it runs.</string>
-    <string name="settings_local_only_hotspot_hint">XPplay creates and closes this hotspot; the iPhone joins automatically. If it fails, switch back to another mode.</string>
+    <string name="settings_local_only_hotspot">Local hotspot (experimental, backup)</string>
+    <string name="settings_local_only_hotspot_description">Backup option: XPplay creates the hotspot and the iPhone connects directly, with no router. Note: this hotspot does not share Internet, so the car’s own apps fall back to the car’s mobile data, and the first connection needs a confirmation on the iPhone. Prefer Existing Wi-Fi / Same LAN for daily use.</string>
+    <string name="settings_local_only_hotspot_hint">XPplay creates and closes this hotspot; the iPhone joins automatically. The first time, tap Join if the iPhone asks to join the AndroidShare network. Existing Wi-Fi is recommended for daily use.</string>
+    <string name="waiting_for_paired_iphone_local_hotspot">Waiting for the iPhone to join the local hotspot (first time: tap Join when the iPhone asks to join the AndroidShare network)</string>
+    <string name="connection_help_local_hotspot">The local hotspot was created but the iPhone did not join. Keep the iPhone unlocked with Bluetooth on; the first time, the iPhone asks to join the AndroidShare network — tap Join. If it still fails, switch to Existing Wi-Fi / Same LAN (more stable).</string>
 </resources>

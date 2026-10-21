@@ -37,9 +37,10 @@ class HotspotModeMigrationTest {
         assertEquals("test-password", AirPlayPersistence.loadManualHotspotPassphrase(context))
     }
 
-    @Test fun freshInstallUsesBuiltInHotspot() {
+    // The G3 has no built-in car hotspot: a fresh install starts on the recommended same-LAN mode.
+    @Test fun freshInstallPrefersExistingWifi() {
         prefs.edit().clear().apply()
-        assertEquals(WirelessHotspotMode.MANUAL, AirPlayPersistence.loadWirelessHotspotMode(context))
+        assertEquals(WirelessHotspotMode.EXISTING_WIFI, AirPlayPersistence.loadWirelessHotspotMode(context))
     }
 
     @Test fun existingWifiDirectSelectionIsPreserved() {

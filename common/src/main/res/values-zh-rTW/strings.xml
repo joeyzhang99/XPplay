@@ -1,6 +1,6 @@
 <resources>
     <string name="existing_wifi_title">現有 Wi-Fi / 同一區域網路</string>
-    <string name="existing_wifi_description">使用已有路由器或隨身 Wi-Fi。讓 iPhone 和車機保持連線同一網路，並透過它上網。</string>
+    <string name="existing_wifi_description">推薦（日常主用）：使用既有路由器或隨身 Wi-Fi，讓 iPhone 和車機連線同一網路並上網；車機內建應用程式會走這個網路，不消耗車機行動流量。</string>
     <string name="existing_wifi_hint">現有 Wi-Fi · 兩部裝置保持連線同一 Wi-Fi，藍牙保持開啟，無需開啟車機熱點。</string>
     <string name="existing_wifi_instructions">先在系統設定中將車機和 iPhone 連線同一外部 Wi-Fi，再準確填寫它的名稱和 WPA2 密碼；僅開放網路可留空密碼。路由器使用 WPA2 或 WPA2/WPA3 混合模式，並關閉用戶端隔離。XPplay 保持此 Wi-Fi 連線，不建立熱點。</string>
     <string name="existing_wifi_details">外部 Wi-Fi 詳細資訊</string>
@@ -932,7 +932,9 @@
     <string name="settings_wifi_high_performance">Wi-Fi 高效能模式（實驗）</string>
     <string name="settings_wifi_high_performance_description">無線連線期間讓 Wi-Fi 不進入省電。可能減少鏈路造成的影片和音樂卡頓；會增加耗電。</string>
     <string name="wired_carplay_unavailable_using_wireless">此車機無法啟動有線 CarPlay（沒有 VPN 授權畫面），已繼續使用無線連線。</string>
-    <string name="settings_local_only_hotspot">本地熱點（實驗）</string>
-    <string name="settings_local_only_hotspot_description">由 XPplay 自行建立熱點，車機不需要有熱點功能；iPhone 直連，沒有路由器中轉，連線期間也不會因車機掃描 Wi-Fi 而卡頓。啟用時車機會中斷原本的 Wi-Fi。</string>
-    <string name="settings_local_only_hotspot_hint">本地熱點由 XPplay 建立與關閉，iPhone 會自動加入；若連線失敗，請切回其他模式。</string>
+    <string name="settings_local_only_hotspot">本地熱點（實驗，備選）</string>
+    <string name="settings_local_only_hotspot_description">備選方案：由 XPplay 建立熱點，iPhone 直連、無需路由器。注意：此熱點不共享網際網路，車機內建應用程式會改用車機行動數據；首次連線需要在 iPhone 上確認加入。日常建議優先使用「現有 Wi-Fi / 同一區域網路」。</string>
+    <string name="settings_local_only_hotspot_hint">本地熱點由 XPplay 建立和關閉，iPhone 會自動加入；首次連線時若 iPhone 彈出加入 AndroidShare 網路的提示，請點「加入」。日常更推薦「現有 Wi-Fi」。</string>
+    <string name="waiting_for_paired_iphone_local_hotspot">等待 iPhone 加入本地熱點（首次連線時，請在 iPhone 彈出提示後點「加入」）</string>
+    <string name="connection_help_local_hotspot">本地熱點已建立，但 iPhone 沒有加入。請保持 iPhone 解鎖、藍牙開啟；首次連線時 iPhone 會彈出「加入 AndroidShare 無線區域網路」，請點「加入」。仍失敗時建議改用「現有 Wi-Fi / 同一區域網路」模式（更穩定）。</string>
 </resources>
