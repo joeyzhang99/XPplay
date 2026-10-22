@@ -100,6 +100,20 @@ internal object DiagnosticExportStore {
     fun needsStoragePermission(context: Context, sdkInt: Int = Build.VERSION.SDK_INT): Boolean =
         sdkInt < Build.VERSION_CODES.Q && !canWritePublicDownloads(context, sdkInt)
 
+    /** Reports kept in Downloads/XPplay; the newest export always survives its own prune. */
+    internal const val KEEP_REPORTS = 8
+
+    /** Deletes older report files this app wrote, oldest first, keeping [keep] reports including [current]. */
+    internal fun pruneReports(directory: File, keep: Int, current: File) {
+        val reports = directory.listFiles { entry ->
+            entry.isFile && entry.name.startsWith("XPplay-") && entry.name.endsWith(".txt")
+        } ?: return
+        reports.filter { it != current }
+            .sortedByDescending { it.lastModified() }
+            .drop((keep - 1).coerceAtLeast(0))
+            .forEach { runCatching { it.delete() } }
+    }
+
     @Suppress("DEPRECATION")
     fun publicDownloadsDirectory(): File =
         File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "XPplay")
@@ -118,7 +132,10 @@ internal object DiagnosticExportStore {
             file.delete()
             throw error
         }
-        // The report is saved; nothing below may undo that. The user's Downloads folder is never pruned.
+        // The report is saved; nothing below may undo that. Old XPplay reports are pruned so the
+        // public folder cannot grow to tens of megabytes over months of exports; nothing else there
+        // is touched.
+        runCatching { pruneReports(directory, KEEP_REPORTS, file) }
         runCatching {
             MediaScannerConnection.scanFile(context.applicationContext, arrayOf(file.absolutePath), arrayOf("text/plain"), null)
         }

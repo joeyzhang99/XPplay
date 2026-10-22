@@ -188,7 +188,6 @@
     <string name="could_not_save_the_report">Could not save the report</string>
     <string name="could_not_start_carplay_return_to_diplay_and_check_app_per">Could not start CarPlay. Return to XPplay and check app permissions.</string>
     <string name="custom_1_1_icon">Custom 1:1 icon</string>
-    <string name="debug_logs">Debug logs</string>
     <string name="default_icon">Default icon</string>
     <string name="default_placeholder_icon">Default placeholder icon</string>
     <string name="diagnostic_report_saved">Diagnostic report saved</string>
@@ -404,7 +403,6 @@
     <string name="settings_open_advanced">Open Advanced settings</string>
     <string name="setup_needs_attention">Setup needs attention</string>
     <string name="share">Share</string>
-    <string name="show_on_screen_debug_logs">Show on-screen debug logs</string>
     <string name="show_password">Show password</string>
     <string name="show_the_side_map_only_when_its_card_is_open_and_switch_to">Show the side map only when its card is open, and switch to the full map in Map theme. Theme and card changes keep CarPlay connected.</string>
     <string name="shows_the_iphone_s_cluster_map_on_the_instrument_cluster_c">Shows the iPhone\'s map on the dashboard. Choose Small or Full screen navi in the dashboard\'s steering-wheel menu.</string>
@@ -466,6 +464,8 @@
     <string name="option_size_large">Large</string>
     <string name="option_size_medium">Medium</string>
     <string name="option_size_small">Small</string>
+    <string name="option_size_custom">Custom</string>
+    <string name="size_option_millimeters">%1$s · %2$d mm</string>
     <string name="option_theme_scenario">Scenario · side map</string>
     <string name="option_theme_map">Map · full map</string>
     <string name="option_theme_simple">Simple · side map</string>

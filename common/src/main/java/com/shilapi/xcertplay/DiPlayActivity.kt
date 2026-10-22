@@ -49,6 +49,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.shilapi.xcertplay.adb.LocalAdb
+import com.shilapi.xcertplay.airplay.AirPlayDisplaySettings
 import com.shilapi.xcertplay.airplay.CarPlayClusterDisplay
 import com.shilapi.xcertplay.airplay.CarPlayDisplayScale
 import com.shilapi.xcertplay.airplay.ClusterSpeedometerOverlay
@@ -1789,7 +1790,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                 { AirPlayPersistence.loadDisplayScalePercent(this) }, reconnects = true,
                 save = { AirPlayPersistence.saveDisplayScalePercent(this, it) },
             )
-            choice(card, getString(R.string.frame_rate), listOf(getString(R.string.s_30_fps_lighter_load), getString(R.string.s_60_fps_smoother_motion)), if (AirPlayPersistence.loadFps(this) == 60) 1 else 0) { AirPlayPersistence.saveFps(this, if (it == 1) 60 else 30) }
+            frameRateControl(card)
             carPlayDockControl(card)
             addSystemBarControls(
                 hideTopBar = AirPlayPersistence.loadHideTopBar(this),
@@ -3098,6 +3099,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         val slider: SeekBar
 
         init {
+            searchIndexSink?.add(title)
             orientation = VERTICAL
             val valueView = label(describe(current), 16, ACCENT, true)
             val head = row().apply { gravity = Gravity.CENTER_VERTICAL; setPadding(0, dp(12), 0, 0) }
@@ -3928,14 +3930,66 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
     }
 
     private fun carPlaySizeControl(parent: LinearLayout) {
-        val sizes = com.shilapi.xcertplay.airplay.CarPlaySize.entries
-        val current = com.shilapi.xcertplay.airplay.CarPlaySize.fromWidthMillimeters(AirPlayPersistence.loadWidthPhysicalMm(this))
-        choice(parent, getString(R.string.carplay_size), sizes.map { it.localizedLabel(this) }, sizes.indexOf(current)) {
-            AirPlayPersistence.saveWidthPhysicalMm(this, sizes[it].widthMillimeters)
+        val title = getString(R.string.carplay_size)
+        fun summary(): String {
+            val saved = AirPlayPersistence.loadWidthPhysicalMm(this)
+            return "$title · ${carPlaySizeChoices(this, saved).first { it.widthMillimeters == saved }.label}"
         }
+        // Built with its title so Settings search indexes the row.
+        val button = button(summary(), false) {}
+        fun refresh() { button.text = summary() }
+        fun apply(millimeters: Int) {
+            AirPlayPersistence.saveWidthPhysicalMm(this, millimeters)
+            refresh()
+            if (CarPlayBackgroundSession.hasSession()) connect(AirPlayPersistence.loadWirelessEnabled(this))
+        }
+        button.setOnClickListener {
+            val saved = AirPlayPersistence.loadWidthPhysicalMm(this)
+            val choices = carPlaySizeChoices(this, saved)
+            var pending = choices.indexOfFirst { it.widthMillimeters == saved }
+            appDialogBuilder().setTitle(title)
+                .setSingleChoiceItems(choices.map { it.label }.toTypedArray(), pending) { _, index -> pending = index }
+                .setPositiveButton(getString(if (CarPlayBackgroundSession.hasSession()) R.string.apply_and_reconnect else R.string.save)) { _, _ ->
+                    val pick = choices[pending]
+                    if (pick.custom) askCarPlayLength(pick.widthMillimeters, ::apply)
+                    else if (pick.widthMillimeters != saved) apply(pick.widthMillimeters)
+                }.setNegativeButton(getString(R.string.cancel), null).show()
+        }
+        parent.addView(button, matchButton(0, 60)); parent.addView(space(12))
         parent.addView(label(getString(R.string.changes_the_size_of_carplay_icons_and_text_applying_a_size), 14, MUTED).apply {
             setPadding(0, 0, 0, dp(18))
         })
+    }
+
+    private fun askCarPlayLength(start: Int, onApply: (Int) -> Unit) {
+        val steps = (AirPlayDisplaySettings.MIN_WIDTH_PHYSICAL_MM..AirPlayDisplaySettings.MAX_WIDTH_PHYSICAL_MM
+            step AirPlayDisplaySettings.WIDTH_PHYSICAL_MM_STEP).toList()
+        var length = start
+        val title = getString(R.string.physical_length)
+        val row = overlaySliderRow(title, steps, start) { "$it mm" }
+        row.slider.contentDescription = title
+        row.onSave = { length = it }
+        appDialogBuilder().setTitle(getString(R.string.carplay_size))
+            .setView(row.apply { setPadding(dp(24), 0, dp(24), 0) })
+            .setPositiveButton(getString(if (CarPlayBackgroundSession.hasSession()) R.string.apply_and_reconnect else R.string.save)) { _, _ ->
+                if (length != start) onApply(length)
+            }
+            .setNegativeButton(getString(R.string.cancel), null).show()
+    }
+
+    // The CarPlay menu's slider also saves the steps between 30 and 60 fps. Such a rate is listed as it is, so the
+    // row shows the rate in use and 30 or 60 can still be chosen from it.
+    private fun frameRateControl(parent: LinearLayout) {
+        val current = AirPlayPersistence.loadFps(this)
+        val rates = listOf(30, current, 60).distinct()
+        val labels = rates.map {
+            when (it) {
+                30 -> getString(R.string.s_30_fps_lighter_load)
+                60 -> getString(R.string.s_60_fps_smoother_motion)
+                else -> "$it fps"
+            }
+        }
+        choice(parent, getString(R.string.frame_rate), labels, rates.indexOf(current)) { AirPlayPersistence.saveFps(this, rates[it]) }
     }
 
     private fun scheduleTimeControl(parent: LinearLayout, start: Boolean) {
@@ -4189,7 +4243,13 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
     }
 
     /** The text of a diagnostic report. It reads the session logs, so call it off the main thread. */
-    private fun diagnosticReportText(appContext: Context): String = buildString {
+    private fun diagnosticReportText(appContext: Context): String {
+        val logSegments = SessionLogFile.REPORT_NAMES
+            .map { name -> name to File(appContext.filesDir, "logs/$name") }
+            .filter { it.second.isFile }
+        // Read every segment once for the summary and the coverage of each header below.
+        val analysis = runCatching { DiagnosticLogSummary.analyze(logSegments) }.getOrNull()
+        return buildString {
         appendLine("XPplay ${version()} diagnostic report")
         appendLine("Android ${Build.VERSION.RELEASE} / API ${Build.VERSION.SDK_INT}")
         appendLine("Head unit: ${Build.MANUFACTURER} ${Build.MODEL}")
@@ -4202,9 +4262,10 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         appendLine("Saved video preference (may differ from active session): ${if (AirPlayPersistence.loadHevcEnabled(appContext)) "HEVC" else "H.264"}; ${AirPlayPersistence.loadFps(appContext)} fps")
         appendLine("Media-key audio focus: ${if (AirPlayPersistence.loadDisableMediaKeyAudioFocus(appContext)) "disabled" else "enabled"}")
         appendLine("MTK decoder tuning preference: ${if (AirPlayPersistence.loadMtkDecoderTuning(appContext)) "enabled" else "disabled"}")
-        appendLine("CarPlay size: ${com.shilapi.xcertplay.airplay.CarPlaySize.fromWidthMillimeters(AirPlayPersistence.loadWidthPhysicalMm(appContext)).label}")
+        val widthMm = AirPlayPersistence.loadWidthPhysicalMm(appContext)
+        appendLine("CarPlay size: ${com.shilapi.xcertplay.airplay.CarPlaySize.exact(widthMm)?.label ?: "Custom"}, $widthMm mm")
         appendLine("Saved resolution preference (may differ from active session): ${AirPlayPersistence.loadDisplayScalePercent(appContext)}%")
-        appendLine("Session: ${if (CarPlayBackgroundSession.active) "active" else if (CarPlayBackgroundSession.hasSession()) "connecting" else "stopped"}")
+        appendLine("Session: ${if (CarPlayBackgroundSession.active) "active" else if (CarPlayBackgroundSession.hasSession()) "connecting" else "stopped"}; log files retained: ${logSegments.size}")
         appendLine(PhoneWakeDiagnostics.report(appContext))
         appendLine("Head-unit board: ${Build.BOARD}; hardware: ${Build.HARDWARE}; build: ${Build.DISPLAY}")
         appendLine()
@@ -4230,12 +4291,17 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         appendLine("--- Last crash recorded by DiPlay ---")
         appendLine(CrashRecord.report(appContext))
         appendLine()
-        for (name in SessionLogFile.REPORT_NAMES) {
-            val file = File(appContext.filesDir, "logs/$name")
-            if (file.isFile) {
-                appendLine("--- $name ---")
-                file.useLines { lines -> lines.forEach { line -> DiagnosticRedactor.redact(line)?.let { appendLine(it) } } }
-            }
+        appendLine("--- Session summary (all retained logs) ---")
+        if (analysis == null) {
+            appendLine("Log summary unavailable")
+        } else {
+            analysis.lines.forEach { appendLine(it) }
+        }
+        appendLine()
+        for ((name, file) in logSegments) {
+            appendLine(DiagnosticLogSummary.header(name, analysis?.coverage?.get(name)))
+            file.useLines { lines -> lines.forEach { line -> DiagnosticRedactor.redact(line)?.let { appendLine(it) } } }
+        }
         }
     }
 

@@ -186,7 +186,6 @@
     <string name="could_not_save_the_report">Не вдалося зберегти звіт</string>
     <string name="could_not_start_carplay_return_to_diplay_and_check_app_per">Не вдалося запустити CarPlay. Поверніться до XPplay та перевірте дозволи застосунку.</string>
     <string name="custom_1_1_icon">Власний значок 1:1</string>
-    <string name="debug_logs">Журнали налагодження</string>
     <string name="default_icon">Типовий значок</string>
     <string name="default_placeholder_icon">Типовий значок-заповнювач</string>
     <string name="diagnostic_report_saved">Діагностичний звіт збережено</string>
@@ -364,7 +363,6 @@
     <string name="settings">Налаштування</string>
     <string name="setup_needs_attention">Налаштування потребує уваги</string>
     <string name="share">Поділитися</string>
-    <string name="show_on_screen_debug_logs">Показувати журнали налагодження на екрані</string>
     <string name="show_password">Показати пароль</string>
     <string name="show_the_side_map_only_when_its_card_is_open_and_switch_to">Показувати карту збоку, лише коли відкрито її картку, та переходити до повної карти в темі «Карта». Зміна теми чи картки не перериває CarPlay.</string>
     <string name="shows_the_iphone_s_cluster_map_on_the_instrument_cluster_c">Показує карту iPhone на панелі приладів. У меню панелі приладів на кермі виберіть «Мала навігація» або «Повноекранна навігація».</string>
@@ -426,6 +424,8 @@
     <string name="option_size_large">Великий</string>
     <string name="option_size_medium">Середній</string>
     <string name="option_size_small">Малий</string>
+    <string name="option_size_custom">Власний</string>
+    <string name="size_option_millimeters">%1$s · %2$d mm</string>
     <string name="option_theme_scenario">Сценарій · карта збоку</string>
     <string name="option_theme_map">Карта · повна карта</string>
     <string name="option_theme_simple">Проста · карта збоку</string>

@@ -186,7 +186,6 @@
     <string name="could_not_save_the_report">レポートを保存できませんでした</string>
     <string name="could_not_start_carplay_return_to_diplay_and_check_app_per">CarPlayを起動できませんでした。XPplayに戻り、アプリの権限を確認してください。</string>
     <string name="custom_1_1_icon">カスタムの正方形アイコン</string>
-    <string name="debug_logs">デバッグログ</string>
     <string name="default_icon">標準アイコン</string>
     <string name="default_placeholder_icon">標準の仮アイコン</string>
     <string name="diagnostic_report_saved">診断レポートを保存しました</string>
@@ -402,7 +401,6 @@
     <string name="settings_open_advanced">詳細設定を開く</string>
     <string name="setup_needs_attention">設定を確認してください</string>
     <string name="share">共有</string>
-    <string name="show_on_screen_debug_logs">画面にデバッグログを表示</string>
     <string name="show_password">パスワードを表示</string>
     <string name="show_the_side_map_only_when_its_card_is_open_and_switch_to">地図カードが開いているときだけサイドマップを表示し、「地図」テーマで全画面に切り替えます。テーマを変更してもCarPlay接続は維持します。</string>
     <string name="shows_the_iphone_s_cluster_map_on_the_instrument_cluster_c">iPhoneの地図をメーターに表示します。ステアリングスイッチのメニューから小画面ナビまたは全画面ナビを選んでください。</string>
@@ -464,6 +462,8 @@
     <string name="option_size_large">大</string>
     <string name="option_size_medium">中</string>
     <string name="option_size_small">小</string>
+    <string name="option_size_custom">カスタム</string>
+    <string name="size_option_millimeters">%1$s · %2$d mm</string>
     <string name="option_theme_scenario">シナリオ · サイドマップ</string>
     <string name="option_theme_map">地図 · 全画面</string>
     <string name="option_theme_simple">シンプル · サイドマップ</string>

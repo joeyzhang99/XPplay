@@ -24,13 +24,30 @@ class MediaAudioBufferTest {
     }
 
     @Test
-    fun `calls and prompts keep the low-latency buffer`() {
+    fun `calls keep the low-latency buffer`() {
         val plan = MediaAudioBuffer.plan(false, 16_000, 1, minBufferBytes = 1_280, mediaMillis = 1000)
         assertEquals(4 * 1024, plan.startBytes)
         assertEquals(16 * 1024, plan.trackBufferBytes)
-        val guidance = AudioChannelMapper.map("default", 100, AudioChannelMappingMode.AUTOMOTIVE_BUS)
-        assertEquals(plan, MediaAudioBuffer.plan(guidance.channel == AudioChannel.MEDIA,
-            16_000, 1, minBufferBytes = 1_280, mediaMillis = 1000))
+    }
+
+    @Test
+    fun `Siri and navigation guidance prebuffer through their bursty tail`() {
+        // 48 kHz mono 16-bit = 96 000 bytes/s: 160 ms start, 400 ms capacity.
+        val guidance = MediaAudioBuffer.plan(
+            isMedia = false, sampleRate = 48_000, channels = 1,
+            minBufferBytes = 7_680, mediaMillis = 1000, shortPrompt = true,
+        )
+        assertEquals(15_360, guidance.startBytes)
+        assertEquals(38_400, guidance.trackBufferBytes)
+        // 16 kHz mono gets the same 160 ms, above the 4 KiB low-latency floor.
+        val siri = MediaAudioBuffer.plan(
+            isMedia = false, sampleRate = 16_000, channels = 1,
+            minBufferBytes = 1_280, mediaMillis = 1000, shortPrompt = true,
+        )
+        assertEquals(5_120, siri.startBytes)
+        assertEquals(16 * 1024, siri.trackBufferBytes)
+        val selection = AudioChannelMapper.map("default", 100, AudioChannelMappingMode.AUTOMOTIVE_BUS)
+        assertEquals(AudioChannel.NAVIGATION, selection.channel)
     }
 
     @Test

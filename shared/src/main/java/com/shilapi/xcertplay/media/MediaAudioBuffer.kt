@@ -27,6 +27,8 @@ object MediaAudioBuffer {
     private const val HEADROOM_MILLIS = 200 // room above the start level so bursts after a gap fit
     private const val MIN_TRACK_BUFFER_BYTES = 16 * 1024
     private const val MIN_START_BUFFER_BYTES = 4 * 1024
+    private const val PROMPT_START_MILLIS = 160
+    private const val PROMPT_CAPACITY_MILLIS = 400
 
     fun sanitize(millis: Int): Int = millis.takeIf { it in presets } ?: DEFAULT_MILLIS
     fun sanitizeWireless(millis: Int): Int = millis.takeIf { it in wirelessPresets } ?: WIRELESS_DEFAULT_MILLIS
@@ -34,13 +36,36 @@ object MediaAudioBuffer {
 
     data class Plan(val trackBufferBytes: Int, val startBytes: Int)
 
-    /** AudioTrack capacity and the amount to queue before play() for one output stream. */
-    fun plan(isMedia: Boolean, sampleRate: Int, channels: Int, minBufferBytes: Int, mediaMillis: Int): Plan {
+    /**
+     * AudioTrack capacity and the amount to queue before play() for one output stream.
+     *
+     * [shortPrompt] marks Siri and navigation guidance: the iPhone sends them in bursts and stops
+     * sending while the prompt is still playing, so the low-latency start that suits a phone call
+     * ran dry at the tail and the first or last word could be cut. A 160 ms start level and 400 ms
+     * capacity ride out those bursts; a telephony stream keeps the low-latency plan.
+     */
+    fun plan(
+        isMedia: Boolean,
+        sampleRate: Int,
+        channels: Int,
+        minBufferBytes: Int,
+        mediaMillis: Int,
+        shortPrompt: Boolean = false,
+    ): Plan {
         val lowLatency = Plan(
             trackBufferBytes = maxOf(minBufferBytes * 4, MIN_TRACK_BUFFER_BYTES),
             startBytes = maxOf(minBufferBytes, MIN_START_BUFFER_BYTES),
         )
-        if (!isMedia) return lowLatency
+        if (!isMedia) {
+            if (!shortPrompt) return lowLatency
+            val bytesPerSecond = sampleRate.toLong() * channels.coerceIn(1, 2) * 2
+            return Plan(
+                trackBufferBytes = maxOf(lowLatency.trackBufferBytes,
+                    (bytesPerSecond * PROMPT_CAPACITY_MILLIS / 1000).toInt()),
+                startBytes = maxOf(lowLatency.startBytes,
+                    (bytesPerSecond * PROMPT_START_MILLIS / 1000).toInt()),
+            )
+        }
         val bytesPerSecond = sampleRate.toLong() * channels.coerceIn(1, 2) * 2
         val start = (bytesPerSecond * sanitize(mediaMillis) / 1000).toInt()
         val capacity = (bytesPerSecond * (sanitize(mediaMillis) + HEADROOM_MILLIS) / 1000).toInt()

@@ -6,13 +6,14 @@ import org.junit.Test
 class CarPlaySizeTest {
     @Test
     fun `presets map back to themselves`() {
-        CarPlaySize.entries.forEach { assertEquals(it, CarPlaySize.fromWidthMillimeters(it.widthMillimeters)) }
+        CarPlaySize.entries.forEach { assertEquals(it, CarPlaySize.exact(it.widthMillimeters)) }
     }
 
     @Test
-    fun `older widths snap to the nearest preset`() {
-        assertEquals(CarPlaySize.LARGE, CarPlaySize.fromWidthMillimeters(200))
-        assertEquals(CarPlaySize.SMALL, CarPlaySize.fromWidthMillimeters(400))
+    fun `only the three preset widths count as a preset`() {
+        org.junit.Assert.assertNull(CarPlaySize.exact(200))
+        org.junit.Assert.assertNull(CarPlaySize.exact(275))
+        org.junit.Assert.assertNull(CarPlaySize.exact(400))
     }
 
     @Test
@@ -23,11 +24,10 @@ class CarPlaySizeTest {
     }
 
     @Test
-    fun `physical length keeps 25 mm steps between the old 50 mm ones`() {
-        // #489: 225 mm sat between the old 200 and 250 mm choices.
+    fun `physical length moves in five millimetre steps`() {
         assertEquals(225, AirPlayDisplaySettings.sanitizeWidthPhysicalMm(225))
-        assertEquals(225, AirPlayDisplaySettings.sanitizeWidthPhysicalMm(231))
-        assertEquals(250, AirPlayDisplaySettings.sanitizeWidthPhysicalMm(240))
-        assertEquals(5, AirPlayDisplaySettings.widthPhysicalMmProgress(225))
+        assertEquals(230, AirPlayDisplaySettings.sanitizeWidthPhysicalMm(231))
+        assertEquals(240, AirPlayDisplaySettings.sanitizeWidthPhysicalMm(240))
+        assertEquals(25, AirPlayDisplaySettings.widthPhysicalMmProgress(225))
     }
 }

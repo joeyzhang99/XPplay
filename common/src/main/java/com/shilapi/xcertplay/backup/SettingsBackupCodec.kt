@@ -20,13 +20,16 @@ object SettingsBackupCodec {
      * detected screen size, the car's hotspot) and consents (sharing the map with other apps) stay out too.
      */
     private val AIRPLAY_KEYS = setOf(
-        "display_scale_tenths", "ui_scale_percent", "hevc_enabled", "hevc_software_decoder",
+        "display_scale_tenths", "display_scale_percent", "ui_scale_percent", "hevc_enabled", "hevc_software_decoder",
         "advanced_audio_channel_mapping", "audio_focus_enabled", "audio_focus_auto_yield",
         "disable_media_key_audio_focus", "media_audio_channel", "navigation_audio_channel",
-        "navigation_stream_type", "wireless_enabled", "wireless_hotspot_mode", "wifi_p2p_preferred_channel", "wifi_direct_scan_pause",
+        "navigation_audio_attenuation_db", "navigation_stream_type", "wireless_enabled",
+        "wireless_hotspot_mode", "wifi_p2p_preferred_channel", "wifi_direct_scan_pause",
         "manual_hotspot_band", "manual_hotspot_channel", "manual_hotspot_security", "app_appearance",
-        "ambient_lux_threshold", "display_fps", "media_buffer_ms", "wired_media_buffer_ms", "main_buffered_audio",
+        "ambient_lux_threshold", "ambient_delay_seconds", "display_fps", "media_buffer_ms",
+        "wired_media_buffer_ms", "main_buffered_audio",
         "speech_without_8_16_khz", "car_bluetooth_audio", "call_echo_cancellation", "call_voice_filter",
+        "call_speakerphone",
         "smooth_video", "direct_video_output", "low_latency_decoder", "mtk_decoder_tuning", "fps_counter",
         "adb_cluster_activity_enabled", "center_map_overlay", "center_map_auto_hide",
         "center_map_follows_dashboard", "settings_gesture_fingers", "display_width_physical_mm",

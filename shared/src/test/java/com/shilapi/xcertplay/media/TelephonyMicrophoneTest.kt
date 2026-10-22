@@ -38,7 +38,8 @@ import org.robolectric.shadows.ShadowAudioRecord
 import org.robolectric.shadows.ShadowLog
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [29], manifest = Config.NONE, shadows = [TelephonyMicrophoneTest.ConfigurableAudioEffect::class])
+@Config(sdk = [29], manifest = Config.NONE,
+    shadows = [TelephonyMicrophoneTest.ConfigurableAudioEffect::class, ShadowAudioModeRequests::class])
 class TelephonyMicrophoneTest {
     private val context get() = RuntimeEnvironment.getApplication()
     private val telephony = AudioStreamId(100, "telephony")
@@ -50,6 +51,7 @@ class TelephonyMicrophoneTest {
 
     @Before fun setUp() {
         ConfigurableAudioEffect.resetStatus()
+        ShadowAudioModeRequests.clearRequests()
         shadowOf(context).grantPermissions(Manifest.permission.RECORD_AUDIO, Manifest.permission.MODIFY_AUDIO_SETTINGS)
         context.getSharedPreferences("diplay_bt_suspend", 0).edit().clear().commit()
         shadowOf(context.getSystemService(BluetoothManager::class.java).adapter).setState(BluetoothAdapter.STATE_ON)
@@ -85,7 +87,7 @@ class TelephonyMicrophoneTest {
     }
 
     @Test fun telephonyEnablesEffectsOnItsRecorderAndRestoresThePreviousMode() {
-        manager.mode = AudioManager.MODE_RINGTONE
+        ShadowAudioModeRequests.otherProcess(AudioManager.MODE_RINGTONE)
         sink.onMicrophoneStarted(telephony, config("telephony"))
         val record = awaitCapture()
 
@@ -103,6 +105,32 @@ class TelephonyMicrophoneTest {
         assertEquals(AudioManager.MODE_RINGTONE, manager.mode)
         assertTrue(ShadowAudioEffect.getAudioEffects().isEmpty())
         assertEquals(AudioRecord.STATE_UNINITIALIZED, record.state)
+    }
+
+    @Test fun aCallLeavesCommunicationModeOnceItsOtherOwnerLetsGo() {
+        val diagnostics = java.util.concurrent.CopyOnWriteArrayList<String>()
+        sink.close()
+        sink = AndroidMediaSink(context = context, onAudioDiagnostic = diagnostics::add)
+        ShadowAudioModeRequests.otherProcess(AudioManager.MODE_IN_COMMUNICATION)
+        sink.onMicrophoneStarted(telephony, config("telephony"))
+        awaitCapture()
+        sink.onMicrophoneStopped(telephony)
+        assertEquals(AudioManager.MODE_IN_COMMUNICATION, manager.mode)
+
+        ShadowAudioModeRequests.otherProcess(AudioManager.MODE_NORMAL)
+        assertEquals(AudioManager.MODE_NORMAL, manager.mode)
+        assertTrue(diagnostics.joinToString("\n"), diagnostics.any {
+            it.startsWith("Audio: mode restored requested=${AudioManager.MODE_NORMAL} now=${AudioManager.MODE_IN_COMMUNICATION}")
+        })
+    }
+
+    @Test fun closingTheSinkDuringACallAlsoLetsTheModeGo() {
+        ShadowAudioModeRequests.otherProcess(AudioManager.MODE_IN_COMMUNICATION)
+        sink.onMicrophoneStarted(telephony, config("telephony"))
+        awaitCapture()
+        sink.close()
+        ShadowAudioModeRequests.otherProcess(AudioManager.MODE_NORMAL)
+        assertEquals(AudioManager.MODE_NORMAL, manager.mode)
     }
 
     @Test fun aCallWhileCarBluetoothIsOffUsesTheCommunicationPath() {
@@ -174,7 +202,7 @@ class TelephonyMicrophoneTest {
     @Test fun diagnosticCallbackFailureDoesNotStopCallCaptureOrChangeModeRestoration() {
         sink.close()
         sink = AndroidMediaSink(context = context, onAudioDiagnostic = { throw IllegalStateException("diagnostic callback failed") })
-        manager.mode = AudioManager.MODE_RINGTONE
+        ShadowAudioModeRequests.otherProcess(AudioManager.MODE_RINGTONE)
         sink.onMicrophoneStarted(telephony, config("telephony"))
         val record = awaitCapture()
         assertEquals(AudioRecord.RECORDSTATE_RECORDING, record.recordingState)
@@ -205,7 +233,7 @@ class TelephonyMicrophoneTest {
     }
 
     @Test fun duplicateStartDoesNotOverwriteTheOriginalModeOrCreateMoreEffects() {
-        manager.mode = AudioManager.MODE_RINGTONE
+        ShadowAudioModeRequests.otherProcess(AudioManager.MODE_RINGTONE)
         sink.onMicrophoneStarted(telephony, config("telephony"))
         awaitCapture()
         sink.onMicrophoneStarted(telephony, config("telephony"))
@@ -215,7 +243,7 @@ class TelephonyMicrophoneTest {
     }
 
     @Test fun failedRecorderInitializationRestoresThePreviousMode() {
-        manager.mode = AudioManager.MODE_RINGTONE
+        ShadowAudioModeRequests.otherProcess(AudioManager.MODE_RINGTONE)
         sink.onMicrophoneStarted(telephony, config("telephony").copy(sampleRate = 1))
         assertEquals(AudioManager.MODE_RINGTONE, manager.mode)
         assertNull(recorder.get())
@@ -265,7 +293,7 @@ class TelephonyMicrophoneTest {
         sink.close()
         val diagnostics = CopyOnWriteArrayList<String>()
         sink = AndroidMediaSink(context = context, onAudioDiagnostic = diagnostics::add)
-        manager.mode = AudioManager.MODE_RINGTONE
+        ShadowAudioModeRequests.otherProcess(AudioManager.MODE_RINGTONE)
         sink.onMicrophoneStarted(telephony, config("telephony"))
         val record = awaitCapture()
         FailingRestoreAudioManager.failSetter = true
@@ -276,7 +304,7 @@ class TelephonyMicrophoneTest {
             assertTrue(ShadowAudioEffect.getAudioEffects().isEmpty())
             val failure = diagnostics.single { it.startsWith("Audio: mode restore failed") }
             val expectedMode = if (failGetter) "unknown" else AudioManager.MODE_IN_COMMUNICATION.toString()
-            assertTrue(failure, failure.contains("requested=${AudioManager.MODE_RINGTONE} now=$expectedMode"))
+            assertTrue(failure, failure.contains("requested=${AudioManager.MODE_NORMAL} now=$expectedMode"))
             assertTrue(failure, failure.contains("error=SecurityException"))
             sink.onMicrophoneStopped(telephony)
             assertEquals(1, diagnostics.count { it.startsWith("Audio: mode restore failed") })
@@ -543,7 +571,7 @@ class TelephonyMicrophoneTest {
     }
 
     @Implements(AudioManager::class)
-    class FailingRestoreAudioManager : ShadowAudioManager() {
+    class FailingRestoreAudioManager : ShadowAudioModeRequests() {
         @Implementation override fun setMode(mode: Int) {
             if (failSetter) throw SecurityException("Mode restore denied")
             super.setMode(mode)

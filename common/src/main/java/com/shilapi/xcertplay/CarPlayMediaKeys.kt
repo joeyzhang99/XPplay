@@ -427,8 +427,18 @@ internal object CarPlayMediaKeys {
     }
 
     private val callback = CarPlayMediaCallback(
+        notUsed = ::notUsed,
         send = ::send,
     )
+
+    /**
+     * A button that is not a CarPlay key goes to the report: a car that sends its own code for a
+     * wheel key then shows it, instead of looking like a car that sent nothing (#610).
+     */
+    private fun notUsed(source: String) {
+        Log.i(TAG, "media key $source not used by CarPlay")
+        WheelKeyLog.note("media key $source not used by CarPlay")
+    }
 
     /** Whether [next] changes what the media session's metadata shows; position and play state do not. */
     internal fun metadataChanged(previous: CarPlayNowPlaying, next: CarPlayNowPlaying): Boolean =
@@ -534,19 +544,23 @@ internal object CarPlayMediaKeys {
 /**
  * Media-session input → CarPlay presses. Hardware keys arrive as button events and keep the toggle;
  * media controllers (not hardware keys) call [onPlay] and [onPause] with an explicit intent.
+ * A button that is not a CarPlay key goes to [notUsed], once per press.
  */
 internal class CarPlayMediaCallback(
     private val experimentalDiLink3Keys: () -> Boolean = { false },
+    private val notUsed: (source: String) -> Unit = {},
     private val send: (index: Int, source: String) -> Unit,
 ) : MediaSession.Callback() {
     override fun onMediaButtonEvent(mediaButtonIntent: Intent): Boolean {
         @Suppress("DEPRECATION")
         val event = mediaButtonIntent.getParcelableExtra<KeyEvent>(Intent.EXTRA_KEY_EVENT) ?: return false
+        val press = event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0
         val index = CarPlayMediaButton.forKeyCode(event.keyCode, experimentalDiLink3Keys())
-            ?: return super.onMediaButtonEvent(mediaButtonIntent)
-        if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
-            send(index, KeyEvent.keyCodeToString(event.keyCode))
+        if (index == null) {
+            if (press) notUsed(KeyEvent.keyCodeToString(event.keyCode))
+            return super.onMediaButtonEvent(mediaButtonIntent)
         }
+        if (press) send(index, KeyEvent.keyCodeToString(event.keyCode))
         return true
     }
 

@@ -1,6 +1,7 @@
 package com.shilapi.xcertplay.backup
 
 import android.content.Context
+import com.shilapi.xcertplay.AirPlayPersistence
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -80,6 +81,23 @@ class SettingsBackupCodecTest {
         assertEquals(true, prefs("diplay").getBoolean("auto_connect", false))
         assertFalse(prefs("diplay").contains("page"))
         assertEquals(66, prefs("carplay_picture").getInt("brightness", 0))
+    }
+
+    @Test
+    fun theResolutionPercentageAndNewerSettingsTravel() {
+        AirPlayPersistence.saveDisplayScalePercent(context, 85)
+        AirPlayPersistence.saveNavigationAudioAttenuationDb(context, -8)
+        AirPlayPersistence.saveCallSpeakerphone(context, true)
+        AirPlayPersistence.saveAmbientDelaySeconds(context, 10)
+        val document = SettingsBackupCodec.export(context, "0.2.21")
+        prefs("xcertplay_airplay").edit().clear().commit()
+
+        assertFalse(SettingsBackupCodec.import(context, document).invalid)
+
+        assertEquals(85, AirPlayPersistence.loadDisplayScalePercent(context))
+        assertEquals(-8, AirPlayPersistence.loadNavigationAudioAttenuationDb(context))
+        assertTrue(AirPlayPersistence.loadCallSpeakerphone(context))
+        assertEquals(10, AirPlayPersistence.loadAmbientDelaySeconds(context))
     }
 
     @Test

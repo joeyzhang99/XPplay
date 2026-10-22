@@ -38,7 +38,13 @@ internal class SessionLogFile(val file: File) : Closeable {
     }
     override fun close() = synchronized(lock) { closed = true }
     companion object {
-        const val MAX_BYTES = 512 * 1024L
+        /**
+         * 1 MiB, not 512 KiB: today's logs filled 512 KiB in about 25 minutes, so eight files covered
+         * only about three hours. The driver's multi-hour trips lost the earliest part of the session.
+         * Eight files at 1 MiB still bound the private log directory at about 8 MiB while covering
+         * roughly six to seven hours on this head unit.
+         */
+        const val MAX_BYTES = 1024 * 1024L
         private val ARCHIVE_NAMES = listOf("previous.log") + (2..7).map { "previous-$it.log" }
         val REPORT_NAMES = ARCHIVE_NAMES.reversed() + "diplay.log"
     }

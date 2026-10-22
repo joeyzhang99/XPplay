@@ -417,8 +417,6 @@ class CarPlayHostActivity : ComponentActivity() {
     // edit is pending. A hash, not the values: one of them is the hotspot passphrase.
     private var menuSettingsSignature: Int? = null
     private var locationReportingSwitch: Switch? = null
-    private var statusView: TextView? = null
-    private var statusScrollView: ScrollView? = null
     private var stageStatusView: TextView? = null
     private var resolutionValueView: TextView? = null
     private var resolutionPreviewView: TextView? = null
@@ -475,7 +473,6 @@ class CarPlayHostActivity : ComponentActivity() {
     private var advancedAudioChannelMappingSupported = false
     private var advancedAudioChannelMapping = false
     private var navigationStreamType = 14
-    private var debugLogsEnabled = false
     private var autoStartOnBoot = false
     private var manufacturer = AirPlayPersistence.DEFAULT_MANUFACTURER
     private var model = AirPlayPersistence.DEFAULT_MODEL
@@ -657,8 +654,6 @@ class CarPlayHostActivity : ComponentActivity() {
     }
     private val teardownExecutor: ExecutorService = Executors.newSingleThreadExecutor()
     private val airPlayCommandExecutor: ExecutorService = Executors.newSingleThreadExecutor()
-    private val logLines = ArrayDeque<LogEntry>()
-    private val expireOldLogLines = Runnable { refreshLogView(System.currentTimeMillis()) }
     // Some head units (e.g. some cars DiLink) update resources.configuration for day/night
     // without delivering onConfigurationChanged, so poll while the activity is visible.
     private val pollConfiguration = object : Runnable {
@@ -844,7 +839,6 @@ class CarPlayHostActivity : ComponentActivity() {
             advancedAudioChannelMappingSupported &&
                 AirPlayPersistence.loadAdvancedAudioChannelMapping(this)
         navigationStreamType = AirPlayPersistence.loadNavigationStreamType(this)
-        debugLogsEnabled = AirPlayPersistence.loadDebugLogsEnabled(this)
         autoStartOnBoot = AirPlayPersistence.loadAutoStartOnBoot(this)
         manufacturer = AirPlayPersistence.loadManufacturer(this)
         model = AirPlayPersistence.loadModel(this)
@@ -1453,7 +1447,6 @@ class CarPlayHostActivity : ComponentActivity() {
         applyFullscreenMode()
         stageStatusView?.maxWidth = (resources.displayMetrics.widthPixels * 0.78f).toInt()
         connectionHelpView?.maxWidth = (resources.displayMetrics.widthPixels * 0.78f).toInt()
-        scrollLogsToBottom()
         videoView?.post {
             val view = videoView ?: return@post
             scheduleDisplaySize(view.width, view.height)
@@ -1498,14 +1491,19 @@ class CarPlayHostActivity : ComponentActivity() {
         }
         if (MapMirrors.onChanged === mirrorsChanged) MapMirrors.onChanged = null
         mainHandler.removeCallbacks(applyDisplaySize)
-        mainHandler.removeCallbacks(expireOldLogLines)
         mainHandler.removeCallbacks(pollConfiguration)
         videoSurfaceOwner.clear()
         currentSurfaceTexture = null
         fallbackVideoView = null
         fallbackVideoBounds = null
         unregisterBluetoothStateReceiver()
-        sessionLog?.append("Activity destroyed")
+        sessionLog?.append(
+            "Activity destroyed; CarPlay session " + when {
+                CarPlayBackgroundSession.active -> "continues in background"
+                CarPlayBackgroundSession.hasSession() -> "still connecting in background"
+                else -> "stopped"
+            },
+        )
         sessionLog?.close()
         sessionLog = null
         super.onDestroy()
@@ -2366,7 +2364,6 @@ class CarPlayHostActivity : ComponentActivity() {
             "display" to R.string.settings_display,
             "navigation" to R.string.settings_navigation,
             "vehicle" to R.string.settings_vehicle,
-            "diagnostics" to R.string.diagnostics,
             "advanced" to R.string.settings_advanced,
             "more" to R.string.settings_more,
         )
@@ -2690,15 +2687,6 @@ class CarPlayHostActivity : ComponentActivity() {
             ).apply { topMargin = dp(30) },
         )
 
-        content = pageFor("diagnostics")
-        content.addView(
-            buildDebugLogsSection(),
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            ).apply { topMargin = dp(12) },
-        )
-
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             content = pageFor("advanced")
             content.addView(
@@ -2979,7 +2967,6 @@ class CarPlayHostActivity : ComponentActivity() {
         AirPlayPersistence.saveManufacturer(this, manufacturer)
         AirPlayPersistence.saveModel(this, model)
         AirPlayPersistence.saveOemLabel(this, oemLabel)
-        AirPlayPersistence.saveDebugLogsEnabled(this, debugLogsEnabled)
         AirPlayPersistence.saveRightHandDrive(this, rightHandDrive)
         CarPlayDock.save(this, carPlayDock)
         AirPlayPersistence.saveHideTopBar(this, hideTopBar)
@@ -2997,7 +2984,7 @@ class CarPlayHostActivity : ComponentActivity() {
         manualHotspotPassphrase, manualHotspotBand, manualHotspotChannel, manualHotspotSecurity,
         locationReportingEnabled, autoStartOnBoot, advancedAudioChannelMapping, displayScaleTenths,
         displayScalePercent, fps, widthPhysicalMm, physicalSizeBasis, hevcEnabled,
-        hevcSoftwareDecoderEnabled, manufacturer, model, oemLabel, debugLogsEnabled, rightHandDrive,
+        hevcSoftwareDecoderEnabled, manufacturer, model, oemLabel, rightHandDrive,
         carPlayDock, hideTopBar, hideBottomBar, temporarySystemBarsEnabled,
         safeAreaDrawOutside, mainDisplayDisableSafeArea, blackCornerRadiusDp,
     ).joinToString("|").hashCode()
@@ -3171,17 +3158,6 @@ class CarPlayHostActivity : ComponentActivity() {
             requestLocationPermission()
         }
     }
-
-    private fun buildDebugLogsSection(): View =
-        settingsSwitchRow(
-            label = getString(R.string.debug_logs),
-            checked = debugLogsEnabled,
-            description = getString(R.string.show_on_screen_debug_logs),
-        ) { checked ->
-            debugLogsEnabled = checked
-            appendLog("Debug logs ${if (debugLogsEnabled) "enabled" else "disabled"}")
-            updateDebugOverlays()
-        }
 
     private fun buildStepSliderSection(
         title: String,
@@ -5553,7 +5529,6 @@ class CarPlayHostActivity : ComponentActivity() {
         gestureOverlay?.visibility = View.VISIBLE
         settingsGestureHint?.text = settingsGestureHintText()
         updateDebugOverlays()
-        logLines.clear()
         appendLog(
             "$prefix; resolution " +
                 "${displayScalePercent}% with " +
@@ -5920,7 +5895,6 @@ class CarPlayHostActivity : ComponentActivity() {
     }
 
     private fun updateDebugOverlays() {
-        statusScrollView?.visibility = View.GONE
         connectionPanel?.visibility = if (activeScreenStreamTypes.isEmpty()) View.VISIBLE else View.GONE
     }
 
@@ -5981,27 +5955,6 @@ class CarPlayHostActivity : ComponentActivity() {
         sessionLog = activeLog
     }
 
-    private fun refreshLogView(nowMillis: Long) {
-        val cutoff = nowMillis - LOG_RETENTION_MILLIS
-        while (logLines.firstOrNull()?.timestampMillis?.let { it <= cutoff } == true) {
-            logLines.removeFirst()
-        }
-        statusView?.text = logLines.joinToString("\n") { it.text }
-        scrollLogsToBottom()
-
-        mainHandler.removeCallbacks(expireOldLogLines)
-        logLines.firstOrNull()?.let { oldest ->
-            val delay = (oldest.timestampMillis + LOG_RETENTION_MILLIS - nowMillis + 1L)
-                .coerceAtLeast(1L)
-            mainHandler.postDelayed(expireOldLogLines, delay)
-        }
-    }
-
-    private fun scrollLogsToBottom() {
-        statusScrollView?.post {
-            statusScrollView?.fullScroll(View.FOCUS_DOWN)
-        }
-    }
 
     private fun applyFullscreenMode() {
         val multiWindow = isMultiWindowActive()
@@ -6115,7 +6068,6 @@ class CarPlayHostActivity : ComponentActivity() {
         // this budget when a codec is still busy.
         const val SINK_RELEASE_WAIT_MILLIS = 2_000L
         private const val CENTER_MAP_IDLE_MILLIS = 3_000L // a reconnect is quicker; a session end is not
-        const val LOG_RETENTION_MILLIS = 5 * 60_000L
         const val DISPLAY_CHANGE_DEBOUNCE_MILLIS = 500L
         const val CONFIGURATION_POLL_INTERVAL_MILLIS = 2_000L
         const val RECONNECT_DELAY_MILLIS = 2_000L
@@ -6146,7 +6098,6 @@ class CarPlayHostActivity : ComponentActivity() {
     }
 
     private data class DisplaySize(val width: Int, val height: Int)
-    private data class LogEntry(val timestampMillis: Long, val text: String)
     private data class HotspotStatus(
         val state: String,
         val ssid: String? = null,

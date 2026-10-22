@@ -182,7 +182,6 @@
     <string name="could_not_save_the_report">No se pudo guardar el informe</string>
     <string name="could_not_start_carplay_return_to_diplay_and_check_app_per">No se pudo iniciar CarPlay. Vuelve a XPplay y comprueba los permisos de la aplicación.</string>
     <string name="custom_1_1_icon">Icono personalizado 1:1</string>
-    <string name="debug_logs">Registros de depuración</string>
     <string name="default_icon">Icono predeterminado</string>
     <string name="default_placeholder_icon">Icono de marcador de posición predeterminado</string>
     <string name="diagnostic_report_saved">Informe de diagnóstico guardado</string>
@@ -353,7 +352,6 @@
     <string name="settings">Ajustes</string>
     <string name="setup_needs_attention">La configuración necesita atención</string>
     <string name="share">Compartir</string>
-    <string name="show_on_screen_debug_logs">Mostrar registros de depuración en pantalla</string>
     <string name="show_password">Mostrar contraseña</string>
     <string name="show_the_side_map_only_when_its_card_is_open_and_switch_to">Muestra el mapa lateral solo cuando su tarjeta está abierta y cambia al mapa completo en el tema del mapa. Los cambios de tema y tarjeta mantienen CarPlay conectado.</string>
     <string name="shows_the_iphone_s_cluster_map_on_the_instrument_cluster_c">Muestra el mapa del iPhone en el panel de instrumentos. Selecciona navegación en pantalla pequeña o completa en el menú del panel mediante los controles del volante.</string>
@@ -413,6 +411,8 @@
     <string name="option_size_large">Grande</string>
     <string name="option_size_medium">Mediano</string>
     <string name="option_size_small">Pequeño</string>
+    <string name="option_size_custom">Personalizado</string>
+    <string name="size_option_millimeters">%1$s · %2$d mm</string>
     <string name="option_theme_scenario">Escenario · mapa lateral</string>
     <string name="option_theme_map">Mapa · mapa completo</string>
     <string name="option_theme_simple">Simple · mapa lateral</string>

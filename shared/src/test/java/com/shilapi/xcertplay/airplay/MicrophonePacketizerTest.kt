@@ -69,6 +69,17 @@ class MicrophonePacketizerTest {
     }
 
     @Test
+    fun theReportedMicrophoneClockIsTheOneItsTimestampsCountIn() {
+        // LPCM Siri asks for 24 kHz: its RTP timestamps count at 24 kHz, not the 48 kHz capture rate.
+        val wiredSiri = config(AudioCodecKind.LPCM, sampleRate = 24_000)
+        assertEquals(24_000, wiredSiri.rtpClockRate)
+        assertEquals(wiredSiri.rtpClockRate / 50, wiredSiri.rtpSamplesPerPacket)
+        val wirelessSiri = config(AudioCodecKind.OPUS, opusClockRate = 24_000)
+        assertEquals(24_000, wirelessSiri.rtpClockRate)
+        assertEquals(wirelessSiri.rtpClockRate / 50, wirelessSiri.rtpSamplesPerPacket)
+    }
+
+    @Test
     fun observedSiriPacketsUse480TicksWithoutChangingCapturedSamplesOrPayload() {
         assertPacketSequence(0x20000000L, 480)
     }

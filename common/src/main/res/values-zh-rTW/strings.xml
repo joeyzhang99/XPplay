@@ -181,7 +181,6 @@
     <string name="could_not_save_the_report">無法儲存報告</string>
     <string name="could_not_start_carplay_return_to_diplay_and_check_app_per">無法啟動 CarPlay。請返回 XPplay 檢查 App 權限。</string>
     <string name="custom_1_1_icon">自訂 1:1 圖示</string>
-    <string name="debug_logs">除錯記錄</string>
     <string name="default_icon">預設圖示</string>
     <string name="default_placeholder_icon">預設預留位置圖示</string>
     <string name="diagnostic_report_saved">診斷報告已儲存</string>
@@ -364,7 +363,6 @@
     <string name="settings">設定</string>
     <string name="setup_needs_attention">設定需要處理</string>
     <string name="share">分享</string>
-    <string name="show_on_screen_debug_logs">在螢幕上顯示除錯記錄</string>
     <string name="show_password">顯示密碼</string>
     <string name="show_the_side_map_only_when_its_card_is_open_and_switch_to">僅在地圖卡片展開時顯示側邊地圖，並在「地圖主題」中切換為完整地圖。變更主題或卡片不會中斷 CarPlay 連線。</string>
     <string name="shows_the_iphone_s_cluster_map_on_the_instrument_cluster_c">在儀表板上顯示 iPhone 地圖。透過方向盤操作儀表板選單，選擇小螢幕導航或全螢幕導航。</string>
@@ -426,6 +424,8 @@
     <string name="option_size_large">大</string>
     <string name="option_size_medium">中</string>
     <string name="option_size_small">小</string>
+    <string name="option_size_custom">自訂</string>
+    <string name="size_option_millimeters">%1$s · %2$d mm</string>
     <string name="option_theme_scenario">場景 · 側邊地圖</string>
     <string name="option_theme_map">地圖 · 全螢幕地圖</string>
     <string name="option_theme_simple">簡約 · 側邊地圖</string>
