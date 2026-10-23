@@ -356,7 +356,7 @@
     <string name="saving_report">正在儲存報告…</string>
     <string name="security">安全類型</string>
     <string name="selecting_carplay_configuration">正在選擇 CarPlay 設定</string>
-    <string name="sends_precise_android_location_as_carplay_gps_data_when_th">iPhone 要求時，會將 Android 精確位置作為 CarPlay GPS 資料傳送。</string>
+    <string name="sends_precise_android_location_as_carplay_gps_data_when_th">iPhone 請求時，每秒將 Android 精確位置作為 CarPlay GPS 資料傳送；無 GPS 定位時使用網路定位。</string>
     <string name="server_address">伺服器位址</string>
     <string name="set">設定</string>
     <string name="set_up_once_your_details_stay_saved_for_the_next_drive_cha">只需設定一次，資訊會儲存供下次駕駛使用。變更會在下次連線時生效。</string>

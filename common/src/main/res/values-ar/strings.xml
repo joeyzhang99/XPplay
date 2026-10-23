@@ -345,7 +345,7 @@
     <string name="saving_report">جارٍ حفظ التقرير…</string>
     <string name="security">الأمان</string>
     <string name="selecting_carplay_configuration">جارٍ اختيار إعدادات CarPlay</string>
-    <string name="sends_precise_android_location_as_carplay_gps_data_when_th">يرسل موقع Android الدقيق كبيانات GPS لـ CarPlay عند طلب iPhone.</string>
+    <string name="sends_precise_android_location_as_carplay_gps_data_when_th">يرسل موقع Android الدقيق كبيانات GPS لـ CarPlay مرة كل ثانية عندما يطلبه iPhone. يستخدم موقع الشبكة عند غياب إشارة GPS.</string>
     <string name="server_address">عنوان الخادم</string>
     <string name="set">تعيين</string>
     <string name="set_up_once_your_details_stay_saved_for_the_next_drive_cha">اضبط مرة واحدة. تبقى بياناتك محفوظة للرحلة القادمة. تُطبق التغييرات في اتصالك التالي.</string>

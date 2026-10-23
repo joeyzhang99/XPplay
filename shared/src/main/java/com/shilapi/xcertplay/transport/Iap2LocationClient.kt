@@ -2,6 +2,7 @@ package com.shilapi.xcertplay.transport
 
 import com.shilapi.xcertplay.iap2.message.Iap2ControlMessages
 import com.shilapi.xcertplay.iap2.wire.Iap2Frame
+import com.shilapi.xcertplay.location.LocationReportingDiagnostics
 import java.util.Calendar
 import java.util.Date
 import java.util.GregorianCalendar
@@ -161,6 +162,7 @@ class Iap2LocationReporter(
         Iap2LocationMessages.START_LOCATION_INFORMATION -> {
             val components = Iap2LocationMessages.requestedComponents(frame)
             onProgress("iap2 rx=0xfffa start-location-information components=$components")
+            LocationReportingDiagnostics.onRequested(components)
             provider?.onRequested(components)
             start(send)
             true
@@ -169,6 +171,7 @@ class Iap2LocationReporter(
             onProgress("iap2 rx=0xfffc stop-location-information")
             active = false
             sentLogged = false
+            LocationReportingDiagnostics.onStopped()
             provider?.stop()
             true
         }
@@ -196,7 +199,10 @@ class Iap2LocationReporter(
     private fun startProvider(): Boolean {
         if (provider == null) return false
         return try {
-            provider.start().also { started -> if (!started) onProgress("iap2 location provider did not start") }
+            provider.start().also { started ->
+                LocationReportingDiagnostics.onProviderStarted(started)
+                if (!started) onProgress("iap2 location provider did not start")
+            }
         } catch (error: Exception) {
             onProgress("iap2 location provider start failed: ${error.message}")
             false
@@ -207,6 +213,7 @@ class Iap2LocationReporter(
         lastAttemptNanos = nanoTime()
         val sentence = provider?.latestNmea() ?: return
         send(Iap2LocationMessages.locationInformation(sentence))
+        LocationReportingDiagnostics.onSent(sentence)
         if (!sentLogged) {
             sentLogged = true
             onProgress("iap2 tx=0xfffb location-information")

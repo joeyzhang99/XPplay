@@ -61,6 +61,7 @@ import com.shilapi.xcertplay.backup.SettingsQrCode
 import com.shilapi.xcertplay.compat.closeCompat
 import com.shilapi.xcertplay.telecom.PhoneAudioRoute
 import com.shilapi.xcertplay.host.R
+import com.shilapi.xcertplay.location.LocationReportingDiagnostics
 import com.shilapi.xcertplay.media.AmbientColorMode
 import com.shilapi.xcertplay.media.AmbientColorSpeed
 import com.shilapi.xcertplay.media.AmbientIdleBehavior
@@ -4266,6 +4267,12 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         appendLine("CarPlay size: ${com.shilapi.xcertplay.airplay.CarPlaySize.exact(widthMm)?.label ?: "Custom"}, $widthMm mm")
         appendLine("Saved resolution preference (may differ from active session): ${AirPlayPersistence.loadDisplayScalePercent(appContext)}%")
         appendLine("Session: ${if (CarPlayBackgroundSession.active) "active" else if (CarPlayBackgroundSession.hasSession()) "connecting" else "stopped"}; log files retained: ${logSegments.size}")
+        val locationEnabled = AirPlayPersistence.loadLocationReportingEnabled(appContext)
+        val fineLocationGranted = appContext.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) ==
+            PackageManager.PERMISSION_GRANTED
+        appendLine("Location reporting: ${if (locationEnabled) "enabled" else "disabled"}; " +
+            "permission=${if (fineLocationGranted) "granted" else "denied"}")
+        appendLine("Location runtime: ${LocationReportingDiagnostics.report()}")
         appendLine(PhoneWakeDiagnostics.report(appContext))
         appendLine("Head-unit board: ${Build.BOARD}; hardware: ${Build.HARDWARE}; build: ${Build.DISPLAY}")
         appendLine()

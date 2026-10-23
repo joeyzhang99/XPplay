@@ -356,7 +356,7 @@
     <string name="saving_report">レポートを保存しています…</string>
     <string name="security">セキュリティ</string>
     <string name="selecting_carplay_configuration">CarPlayの構成を選択しています</string>
-    <string name="sends_precise_android_location_as_carplay_gps_data_when_th">iPhoneから要求されたときに、Androidの正確な位置情報をCarPlayのGPSデータとして送信します。</string>
+    <string name="sends_precise_android_location_as_carplay_gps_data_when_th">iPhone の要求中、Android の正確な位置情報を CarPlay の GPS データとして毎秒送信します。GPS の測位がない場合はネットワーク位置を使用します。</string>
     <string name="server_address">サーバーアドレス</string>
     <string name="set">設定</string>
     <string name="set_up_once_your_details_stay_saved_for_the_next_drive_cha">一度設定すれば、次回の運転でも接続情報を使用できます。変更は次回接続時から有効です。</string>

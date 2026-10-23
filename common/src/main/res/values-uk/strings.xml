@@ -356,7 +356,7 @@
     <string name="saving_report">Збереження звіту…</string>
     <string name="security">Захист</string>
     <string name="selecting_carplay_configuration">Вибір конфігурації CarPlay</string>
-    <string name="sends_precise_android_location_as_carplay_gps_data_when_th">Передає точну геопозицію Android як GPS-дані CarPlay, коли iPhone їх запитує.</string>
+    <string name="sends_precise_android_location_as_carplay_gps_data_when_th">Надсилає точне місцеположення Android як GPS-дані CarPlay щосекунди, поки iPhone його запитує. Без GPS використовується мережеве місцеположення.</string>
     <string name="server_address">Адреса сервера</string>
     <string name="set">Установити</string>
     <string name="set_up_once_your_details_stay_saved_for_the_next_drive_cha">Налаштуйте один раз. Ваші дані збережуться для наступної поїздки. Зміни діятимуть після наступного підключення.</string>

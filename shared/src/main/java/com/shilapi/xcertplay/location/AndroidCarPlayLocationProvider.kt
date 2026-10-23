@@ -111,6 +111,11 @@ class AndroidCarPlayLocationProvider(
 
     override fun latestNmea(): String? {
         val fix = latestFix() ?: return null
+        LocationReportingDiagnostics.onFix(
+            provider = fix.provider ?: "unknown",
+            fixAtMillis = fix.time,
+            accuracyMeters = fix.accuracy.takeIf { fix.hasAccuracy() },
+        )
         return try {
             NmeaLocationEncoder.encode(
                 CarPlayLocationFix(
