@@ -562,6 +562,22 @@ class CarPlayHostActivity : ComponentActivity() {
     private var lastConfiguration: Configuration? = null
     private var activeAirPlaySession: AirPlaySession? = null
     private val activeScreenStreamTypes = mutableSetOf<Int>()
+
+    // A stuck iPhone opens the main screen stream but sends only keepalives until it is restarted. A still
+    // screen sends no frames either, so only a session that never had a first frame counts.
+    private var noPictureShown = false
+    private val noPictureCheck = object : Runnable {
+        override fun run() {
+            if (isDestroyed) return
+            val missing = SCREEN_TYPE_MAIN in activeScreenStreamTypes && sink?.mainVideoReceived == false
+            if (missing && !noPictureShown) {
+                appendLog("Screen stream open ${NO_PICTURE_MILLIS / 1000} s with no video frame; asking to restart the iPhone")
+            }
+            noPictureShown = missing
+            updateDebugOverlays()
+            if (missing) mainHandler.postDelayed(this, NO_PICTURE_RECHECK_MILLIS)
+        }
+    }
     private var handshakeResetInProgress = false
     private var startAfterHandshakeReset = false
     private var restartGeneration = 0
@@ -1465,6 +1481,7 @@ class CarPlayHostActivity : ComponentActivity() {
 
     override fun onDestroy() {
         mainHandler.removeCallbacks(wifiLinkTicker)
+        mainHandler.removeCallbacks(noPictureCheck)
         mainHandler.removeCallbacks(hideTemporarySystemBars)
         discardLastPicture()
         if (pictureCopyThreadStarted) pictureCopyThread.quitSafely()
@@ -5849,6 +5866,11 @@ class CarPlayHostActivity : ComponentActivity() {
             } else {
                 activeScreenStreamTypes.remove(type)
             }
+            if (type == SCREEN_TYPE_MAIN) {
+                noPictureShown = false
+                mainHandler.removeCallbacks(noPictureCheck)
+                if (active) mainHandler.postDelayed(noPictureCheck, NO_PICTURE_MILLIS)
+            }
             if (type == SCREEN_TYPE_ALT) {
                 appendLog("Cluster map: stream active=$active")
                 MapMirrors.setStreamActive(active)
@@ -5895,7 +5917,10 @@ class CarPlayHostActivity : ComponentActivity() {
     }
 
     private fun updateDebugOverlays() {
-        connectionPanel?.visibility = if (activeScreenStreamTypes.isEmpty()) View.VISIBLE else View.GONE
+        // A session's end clears the streams and sets its own stage line before the next check clears the flag.
+        val noPicture = noPictureShown && SCREEN_TYPE_MAIN in activeScreenStreamTypes
+        if (noPicture) stageStatusView?.text = getString(R.string.iphone_sent_no_picture)
+        connectionPanel?.visibility = if (activeScreenStreamTypes.isEmpty() || noPicture) View.VISIBLE else View.GONE
     }
 
     // The keywords are English; matching the English text keeps the result the same in every UI language.
@@ -6068,6 +6093,9 @@ class CarPlayHostActivity : ComponentActivity() {
         // this budget when a codec is still busy.
         const val SINK_RELEASE_WAIT_MILLIS = 2_000L
         private const val CENTER_MAP_IDLE_MILLIS = 3_000L // a reconnect is quicker; a session end is not
+        // The first frame normally comes within a second of the screen stream opening.
+        private const val NO_PICTURE_MILLIS = 10_000L
+        private const val NO_PICTURE_RECHECK_MILLIS = 250L
         const val DISPLAY_CHANGE_DEBOUNCE_MILLIS = 500L
         const val CONFIGURATION_POLL_INTERVAL_MILLIS = 2_000L
         const val RECONNECT_DELAY_MILLIS = 2_000L

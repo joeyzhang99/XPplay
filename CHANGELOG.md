@@ -1,3 +1,13 @@
+# XPplay 1.6.2 — 2026-10-24
+
+- 上游检查：xcertplay 无更新（仍 1.4.2）；DiPlay 无新 Release（仍 v0.2.21），main 推进到 2026-10-24
+- 同步 #1097：iPhone 只发心跳不发画面时，CarPlay 主画面流 10 秒无首帧则提示重启 iPhone
+- 同步 #1085：开机自启动回到已在运行的 CarPlay 会话，不再显示 Home/Open CarPlay
+- 不同步：失败原因命名/上次连接问题（依赖上游新 cause 模型）、导航音频焦点/通话自身采样率/车道指引（新功能）、音乐时钟修正后续（待实车验证）、ECARX 轮速（不适用 G3）
+- versionCode 10602 / XPplay-V1.6.2
+
+---
+
 # XPplay 1.6.1 — 2026-10-23
 
 - 诊断报告新增位置上报状态：`Location reporting`（开关/权限）+ `Location runtime`（订阅、components、provider、最近 fix 来源/年龄/精度、最近发送的 NMEA 语句类型）；不记录经纬度

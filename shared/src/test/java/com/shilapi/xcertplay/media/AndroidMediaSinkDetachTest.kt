@@ -15,6 +15,16 @@ import kotlin.concurrent.thread
 class AndroidMediaSinkDetachTest {
     private val predicted = byteArrayOf(0, 0, 0, 1, 0x41, 1)
 
+    @Test fun onlyTheMainScreenFrameMarksTheStreamAsHavingAPicture() {
+        val sink = AndroidMediaSink()
+        assertFalse(sink.mainVideoReceived)
+        sink.onVideoFrame(111, predicted)
+        assertFalse(sink.mainVideoReceived)
+        sink.onVideoFrame(110, predicted)
+        assertTrue(sink.mainVideoReceived)
+        sink.close()
+    }
+
     @Test fun aDetachIsConfirmedWhileFramesAreQueued() {
         val surface = Surface(SurfaceTexture(0))
         val sink = AndroidMediaSink(surface = surface, videoPacingDelayMillis = 90)
