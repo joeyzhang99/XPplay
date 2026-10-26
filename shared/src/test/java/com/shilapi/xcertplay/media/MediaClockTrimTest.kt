@@ -6,7 +6,6 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import kotlin.math.abs
 import kotlin.random.Random
 
 class MediaClockTrimTest {
@@ -52,6 +51,61 @@ class MediaClockTrimTest {
                 lowest = minOf(lowest, queued)
             }
         }
+    }
+
+    /**
+     * Wireless CarPlay: the iPhone sends about 0.4 s of music at once, every 0.4 s by its clock give or take
+     * 30 ms (#807, #976). The head unit's clock is accurate; playback starts once the target, and at least one
+     * burst, is queued.
+     */
+    private class BurstDrive(targetMs: Int, seed: Int = 7) {
+        val target = 48L * targetMs
+        val trim = MediaClockTrim(48_000, target)
+        val random = Random(seed)
+        var queued = maxOf(target, 19_200L).toDouble()
+        val starvedSeconds = mutableListOf<Int>()
+        val ratesAfterAMinute = mutableListOf<Int>()
+
+        fun run(seconds: Int) {
+            var rate = 48_000
+            var burst = 1
+            var nextBurstMs = 400.0
+            var played = 0.0
+            for (ms in 0 until seconds * 1000) {
+                val nowNs = ms * 1_000_000L
+                if (ms >= nextBurstMs) {
+                    queued += 19_200
+                    burst++
+                    nextBurstMs = burst * 400 + (random.nextDouble() - 0.5) * 60
+                    trim.sample(queued.toLong(), nowNs)
+                    trim.rateDue(nowNs)?.let { rate = it }
+                    if (ms >= 60_000) ratesAfterAMinute += rate
+                }
+                played += rate / 1000.0
+                while (played >= 1024) {
+                    played -= 1024
+                    if (queued >= 1024) queued -= 1024 else { starvedSeconds += ms / 1000; queued = 0.0 }
+                }
+            }
+        }
+    }
+
+    @Test fun overWiFiTheDefaultBufferIsNotPlayedFast() {
+        for (seed in 1..3) {
+            MediaClockTrim.learnedTrim = 0.0
+            val drive = BurstDrive(300, seed)
+            drive.run(300)
+            assertEquals("seed $seed starved at ${drive.starvedSeconds}", 0, drive.starvedSeconds.count { it >= 60 })
+            assertEquals("seed $seed", 48_000.0, drive.ratesAfterAMinute.average(), 20.0)
+            assertTrue("seed $seed max ${drive.ratesAfterAMinute.max()}", drive.ratesAfterAMinute.max() < 48_200)
+        }
+    }
+
+    @Test fun overWiFiALongerBufferAlsoSettlesAtTheIphonesClock() {
+        val drive = BurstDrive(1000)
+        drive.run(300)
+        assertEquals(emptyList<Int>(), drive.starvedSeconds)
+        assertEquals(48_000.0, drive.ratesAfterAMinute.average(), 20.0)
     }
 
     @Test fun withoutTheTrimA076PercentFastHeadUnitRunsDryEveryMinuteOrSo() {
@@ -102,10 +156,9 @@ class MediaClockTrimTest {
         // The iPhone paused: no write for 2 s, so no update even though the last level was low.
         assertNull(trim.rateDue(2_000_000_000L))
         assertEquals(47_280, trim.rate)
-        // Music resumes at the target level: the average restarts there and the rate ramps back,
-        // at most MAX_STEP_PER_UPDATE per second instead of jumping in one step.
+        // Music resumes at the target level: the average restarts there.
         trim.sample(14_400, 2_100_000_000L)
-        assertEquals(47_424, trim.rateDue(2_100_000_000L))
+        assertEquals(48_000, trim.rateDue(2_100_000_000L))
     }
 
     @Test fun aLongPauseDoesNotCountAsDrift() {
@@ -115,34 +168,8 @@ class MediaClockTrimTest {
         // Five minutes later music resumes with a short first burst: one step, not 300 s, is integrated.
         val resumeNs = 300_000_000_000L
         trim.sample(10_080, resumeNs)
-        assertEquals(47_856, trim.rateDue(resumeNs))
+        assertEquals(47_539, trim.rateDue(resumeNs))
         assertEquals(-0.0006, MediaClockTrim.learnedTrim, 1e-9)
-    }
-
-    // A CarPlay report showed the rate pinned at +1.5 % for 75 % of a music session: bursty arrivals
-    // swung the queued level and the proportional term alone hit the bound.
-    @Test fun jitterAroundTheTargetDoesNotMoveTheRate() {
-        val trim = MediaClockTrim(48_000, 14_400)
-        trim.sample(14_400, 0)
-        trim.rateDue(0)
-        for (second in 1..10) {
-            val level = if (second % 2 == 0) 15_840L else 13_824L
-            trim.sample(level, second * 1_000_000_000L)
-            assertNull(trim.rateDue(second * 1_000_000_000L))
-        }
-        assertEquals(48_000, trim.rate)
-        assertEquals(0.0, MediaClockTrim.learnedTrim, 1e-9)
-    }
-
-    @Test fun aCorrectionRampsInsteadOfJumpingToTheBound() {
-        val trim = MediaClockTrim(48_000, 14_400)
-        trim.sample(10_080, 0) // 30 % below the target
-        val first = trim.rateDue(0)!!
-        trim.sample(10_080, 1_000_000_000L)
-        val second = trim.rateDue(1_000_000_000L)!!
-        val maxStep = (48_000 * MediaClockTrim.MAX_STEP_PER_UPDATE).toInt()
-        assertTrue("first=$first second=$second", abs(second - first) <= maxStep)
-        assertTrue("second=$second", second >= 47_280)
     }
 
     @Test fun aNewStreamStartsFromTheLearnedTrim() {

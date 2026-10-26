@@ -1,3 +1,12 @@
+# XPplay 1.6.3 — 2026-10-26
+
+- 上游检查：xcertplay 无更新（1.4.2）；DiPlay 无新 Release/tag，main 停在 2026-10-24 `9d896330`
+- 性能迭代：移植上游音乐时钟修正（#993/#1070/#1080/#1074）——启动/切歌/重缓冲后测量实际队列水平作为目标；写入阻塞期间到达的包按到达时间计入；丢包后重新测量；减少音乐前几十秒偏快和周期性 rebuffer
+- 新增 30 项上游时钟修正测试（MediaClockTrim 12 + Realtime 9 + Buffered 9），全部通过
+- versionCode 10603 / XPplay-V1.6.3
+
+---
+
 # XPplay 1.6.2 — 2026-10-24
 
 - 上游检查：xcertplay 无更新（仍 1.4.2）；DiPlay 无新 Release（仍 v0.2.21），main 推进到 2026-10-24
