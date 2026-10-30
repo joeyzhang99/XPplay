@@ -57,6 +57,10 @@
     <string name="preview_oem_label">Назва OEM:\u0020</string>
     <string name="preview_empty">(порожньо)</string>
     <string name="preview_frame_rate">Частота кадрів:\u0020</string>
+    <string name="preview_transport_hevc">HEVC (H.265, %1$s)</string>
+    <string name="preview_decoder_hardware">апаратний</string>
+    <string name="preview_decoder_software">програмний</string>
+    <string name="preview_list_separator">,\u0020</string>
     <string name="preview_detected_maximum">Виявлений максимум:\u0020</string>
     <string name="preview_physical_reference">Фізичний орієнтир:\u0020</string>
     <string name="basis_widest_width">найбільша ширина</string>

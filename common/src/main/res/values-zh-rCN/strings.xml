@@ -56,6 +56,10 @@
     <string name="preview_oem_label">OEM 标签：</string>
     <string name="preview_empty">（空）</string>
     <string name="preview_frame_rate">帧率：</string>
+    <string name="preview_transport_hevc">HEVC（H.265，%1$s）</string>
+    <string name="preview_decoder_hardware">硬件</string>
+    <string name="preview_decoder_software">软件</string>
+    <string name="preview_list_separator">，</string>
     <string name="preview_detected_maximum">检测到的最大值：</string>
     <string name="preview_physical_reference">物理参考：</string>
     <string name="basis_widest_width">最宽宽度</string>

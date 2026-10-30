@@ -56,6 +56,10 @@
     <string name="preview_oem_label">Etiqueta OEM:\u0020</string>
     <string name="preview_empty">(vacío)</string>
     <string name="preview_frame_rate">Frecuencia de imágenes:\u0020</string>
+    <string name="preview_transport_hevc">HEVC (H.265, %1$s)</string>
+    <string name="preview_decoder_hardware">hardware</string>
+    <string name="preview_decoder_software">software</string>
+    <string name="preview_list_separator">,\u0020</string>
     <string name="preview_detected_maximum">Máximo detectado:\u0020</string>
     <string name="preview_physical_reference">Referencia física:\u0020</string>
     <string name="basis_widest_width">ancho máximo</string>

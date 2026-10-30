@@ -61,6 +61,10 @@
     <string name="preview_oem_label">OEM名：\u0020</string>
     <string name="preview_empty">（なし）</string>
     <string name="preview_frame_rate">フレームレート：\u0020</string>
+    <string name="preview_transport_hevc">HEVC（H.265、%1$s）</string>
+    <string name="preview_decoder_hardware">ハードウェア</string>
+    <string name="preview_decoder_software">ソフトウェア</string>
+    <string name="preview_list_separator">、</string>
     <string name="preview_detected_maximum">検出した最大値：\u0020</string>
     <string name="preview_physical_reference">実画面サイズの基準：\u0020</string>
     <string name="basis_widest_width">最大幅</string>
